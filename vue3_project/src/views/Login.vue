@@ -9,7 +9,6 @@
       <div class="input-section">
         <div class="input-item">
           <span class="icon">
-            <!-- Mobile Icon -->
             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
               <path d="M17 1H7c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zm-5 20c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm5-4H7V4h10v13z"/>
             </svg>
@@ -23,7 +22,6 @@
 
         <div class="input-item">
           <span class="icon">
-            <!-- Shield/Code Icon -->
             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
               <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
             </svg>
@@ -37,13 +35,15 @@
         </div>
       </div>
 
+
       <button 
         class="login-button" 
-        :class="{ disabled: !agreeToTerms }" 
+        v-bind:class="{ disabled: !agreeToTerms }" 
         @click="handleLogin"
       >
         立即登录
       </button>
+
 
       <div class="terms-section">
         <input type="checkbox" id="terms" v-model="agreeToTerms" />
@@ -60,6 +60,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const phoneNumber = ref('')
 const verificationCode = ref('')
@@ -73,7 +76,7 @@ function handleLogin() {
   
   if (phoneNumber.value && verificationCode.value) {
     alert('登录成功！')
-    console.log('Login successful with:', phoneNumber.value)
+    router.push('/')
   } else {
     alert('请输入手机号和验证码')
   }

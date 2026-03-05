@@ -1,22 +1,7 @@
 <script setup lang="ts">
-import Login from './components/Login.vue'
+import { RouterView } from 'vue-router'
 </script>
 
 <template>
-  <Login />
+  <RouterView />
 </template>
-
-<style>
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-}
-</style>
