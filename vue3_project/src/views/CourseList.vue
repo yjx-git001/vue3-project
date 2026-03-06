@@ -59,7 +59,7 @@
           <button
             v-else
             class="learn-btn"
-            @click="$router.push('/course/' + course.id)"
+            @click="$router.push('/course_content/' + course.id)"
           >
             立即学习
           </button>
@@ -170,13 +170,13 @@ const courseList = ref([
 }
 
 .logo {
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
   margin-right: 8px;
 }
 
 .app-title {
-  font-size: 18px;
+  font-size: 28px;
   font-weight: bold;
 }
 

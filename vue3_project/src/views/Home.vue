@@ -23,7 +23,7 @@
       <section class="course-section">
         <div class="section-header">
           <h2>课程体系</h2>
-          <a href="#" class="see-all">查看全部 ></a>
+          <a href="#" class="see-all" @click.prevent="$router.push('/courses')">查看全部 ></a>
         </div>
         <div class="course-list">
           <div v-for="course in courseSystems" :key="course.id" class="course-card">
@@ -37,7 +37,8 @@
                 <span class="course-price">¥{{ course.price }}</span>
                 <span class="original-price">¥{{ course.originalPrice }}</span>
               </div>
-              <button class="buy-button" @click="$router.push('/course/' + course.id)">立即购买</button>
+              <button v-if="course.isPurchased" class="learn-button" @click="$router.push('/course_content/' + course.id)">立即学习</button>
+              <button v-else class="buy-button" @click="$router.push('/course/' + course.id)">立即购买</button>
             </div>
           </div>
         </div>
@@ -60,7 +61,7 @@
             <p class="promo-title">{{ flashSale.title }}</p>
             <div class="promo-meta">
               <span class="promo-price">¥{{ flashSale.price }}</span>
-              <button class="learn-button">立即学习</button>
+              <button class="learn-button" @click="$router.push('/course_content/' + flashSale.id)">立即学习</button>
             </div>
           </div>
         </div>
@@ -112,22 +113,25 @@ const courseSystems = ref([
   {
     id: 1,
     title: '港口特种设备检修课程',
-    tag: '12课时',
+    tag: '体系课程',
     price: 499,
     originalPrice: 500,
-    image: '/images/course-banner.png'
+    image: '/images/course-banner.png',
+    isPurchased: false
   },
   {
     id: 2,
     title: '港口特种设备检修课程',
-    tag: '12课时',
+    tag: '体系课程',
     price: 499,
     originalPrice: 500,
-    image: '/images/course-banner.png'
+    image: '/images/course-banner.png',
+    isPurchased: true
   }
 ])
 
 const flashSale = ref({
+  id: 1,
   title: '港口安全知识-倒运司机',
   price: 0,
   image: '/images/promo-thumb.png'
@@ -196,13 +200,13 @@ onUnmounted(() => {
 }
 
 .logo {
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
   margin-right: 8px;
 }
 
 .app-title {
-  font-size: 18px;
+  font-size: 28px;
   font-weight: bold;
 }
 
@@ -430,11 +434,13 @@ onUnmounted(() => {
 }
 
 .learn-button {
-  padding: 8px 15px;
-  background-color: #3b82f6;
-  color: #fff;
-  border: none;
-  border-radius: 15px;
+  width: 100%;
+  padding: 8px;
+  background-color: #fff;
+  color: #3b82f6;
+  border: 1px solid #3b82f6;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
 .course-grid {

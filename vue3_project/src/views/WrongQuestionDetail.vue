@@ -67,7 +67,7 @@
       <button class="nav-btn prev">
         <svg viewBox="0 0 24 24"><path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z" /></svg>
       </button>
-      <button class="nav-btn answer-card">
+      <button class="nav-btn answer-card" @click="showAnswerCard = true">
         <svg viewBox="0 0 24 24"><path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,17H7V15H17V17M17,13H7V11H17V13M17,9H7V7H17V9Z" /></svg>
         <span>答题卡</span>
       </button>
@@ -75,6 +75,33 @@
         <svg viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
       </button>
     </footer>
+
+    <!-- 答题卡弹窗 -->
+    <div v-if="showAnswerCard" class="answer-card-modal" @click="showAnswerCard = false">
+      <div class="modal-content" @click.stop>
+        <h3 class="modal-title">答题卡</h3>
+        <div class="filter-tabs">
+          <button :class="['filter-btn', { active: filterType === 'all' }]" @click="filterType = 'all'">
+            <svg viewBox="0 0 24 24" class="filter-icon">
+              <path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19Z" />
+            </svg>
+            清空答题卡
+          </button>
+          <button :class="['filter-btn', { active: filterType === 'answered' }]" @click="filterType = 'answered'">已答</button>
+          <button :class="['filter-btn', { active: filterType === 'unanswered' }]" @click="filterType = 'unanswered'">未答</button>
+        </div>
+        <div class="question-grid">
+          <button
+            v-for="num in totalQuestions"
+            :key="num"
+            class="question-number"
+            @click="showAnswerCard = false"
+          >
+            {{ num }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -82,6 +109,9 @@
 import { ref } from 'vue'
 
 const activeTab = ref('single')
+const showAnswerCard = ref(false)
+const filterType = ref('all')
+const totalQuestions = ref(20)
 
 const questionTabs = ref([
   { id: 'single', name: '单选题', count: 20 },
@@ -347,5 +377,88 @@ const options = ref([
   border-radius: 50%;
   border: 1px solid #ddd;
   justify-content: center;
+}
+
+.answer-card-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: flex-end;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: #fff;
+  border-radius: 20px 20px 0 0;
+  padding: 20px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 16px 0;
+  text-align: center;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.filter-btn {
+  padding: 6px 16px;
+  background-color: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.filter-btn.active {
+  background-color: #fff3e0;
+  border-color: #ff9800;
+  color: #ff9800;
+}
+
+.filter-icon {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.question-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+
+.question-number {
+  width: 100%;
+  aspect-ratio: 1;
+  border: none;
+  border-radius: 12px;
+  background-color: #f5f5f5;
+  color: #333;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.question-number.answered {
+  background-color: #e3f2fd;
+  color: #3b82f6;
 }
 </style>

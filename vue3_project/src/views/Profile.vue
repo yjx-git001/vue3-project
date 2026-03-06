@@ -43,19 +43,19 @@
       <section class="my-courses">
         <h3 class="section-title">我的课程</h3>
         <div class="course-actions">
-          <div class="action-item" @click="$router.push('/course-study')">
+          <div class="action-item" @click="$router.push('/course_study')">
             <div class="action-icon books">
               <svg viewBox="0 0 24 24"><path d="M19,2L14,6.5V17.5L19,13V2M6.5,5C4.55,5 2.45,5.4 1,6.5V21.16C1,21.41 1.25,21.66 1.5,21.66C1.6,21.66 1.65,21.59 1.75,21.59C3.1,20.94 5.05,20.5 6.5,20.5C8.45,20.5 10.55,20.9 12,22C13.35,21.15 15.8,20.5 17.5,20.5C19.15,20.5 20.85,20.81 22.25,21.56C22.35,21.61 22.4,21.59 22.5,21.59C22.75,21.59 23,21.34 23,21.09V6.5C22.4,6.05 21.75,5.75 21,5.5V7.5L21,13V19C19.9,18.65 18.7,18.5 17.5,18.5C15.8,18.5 13.35,19.15 12,20V6.5C10.55,5.4 8.45,5 6.5,5Z" /></svg>
             </div>
             <span class="action-label">课程学习</span>
           </div>
-          <div class="action-item" @click="$router.push('/mock-exam')">
+          <div class="action-item" @click="$router.push('/mock_exam')">
             <div class="action-icon exam">
               <svg viewBox="0 0 24 24"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M10,19L12,15H9V10L7,14H10V19Z" /></svg>
             </div>
             <span class="action-label">模拟考试</span>
           </div>
-          <div class="action-item" @click="$router.push('/wrong-questions')">
+          <div class="action-item" @click="$router.push('/wrong_questions')">
             <div class="action-icon notes">
               <svg viewBox="0 0 24 24"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M15,18V16H6V18H15M18,14V12H6V14H18Z" /></svg>
             </div>
@@ -67,13 +67,13 @@
       <!-- 功能菜单 -->
       <section class="menu-section">
         <div class="menu-grid">
-          <div class="menu-item" @click="$router.push('/course-orders')">
+          <div class="menu-item" @click="$router.push('/course_orders')">
             <div class="menu-icon blue">
               <svg viewBox="0 0 24 24"><path d="M19,3H14.82C14.4,1.84 13.3,1 12,1C10.7,1 9.6,1.84 9.18,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M12,3A1,1 0 0,1 13,4A1,1 0 0,1 12,5A1,1 0 0,1 11,4A1,1 0 0,1 12,3Z" /></svg>
             </div>
             <span class="menu-label">课程订单</span>
           </div>
-          <div class="menu-item" @click="$router.push('/learning-certificate')">
+          <div class="menu-item" @click="$router.push('/learning_certificate')">
             <div class="menu-icon purple">
               <svg viewBox="0 0 24 24"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" /></svg>
             </div>
@@ -81,13 +81,13 @@
           </div>
         </div>
         <div class="menu-grid">
-          <div class="menu-item" @click="$router.push('/coupon-list')">
+          <div class="menu-item" @click="$router.push('/coupon_list')">
             <div class="menu-icon purple">
               <svg viewBox="0 0 24 24"><path d="M21.47,4.35L20.13,3.79V12.82L22.56,6.96C22.97,5.94 22.5,4.77 21.47,4.35M1.97,8.05L6.93,20C7.24,20.77 7.97,21.24 8.74,21.26C9,21.26 9.27,21.21 9.53,21.1L16.9,18.05C17.65,17.74 18.11,17 18.13,16.26C18.14,16 18.09,15.71 18,15.45L13,3.5C12.71,2.73 11.97,2.26 11.19,2.25C10.93,2.25 10.67,2.31 10.42,2.4L3.06,5.45C2.04,5.87 1.55,7.04 1.97,8.05M18.12,4.25A2,2 0 0,0 16.12,2.25H14.67L18.12,10.59" /></svg>
             </div>
             <span class="menu-label">优惠卡券</span>
           </div>
-          <div class="menu-item" @click="$router.push('/account-settings')">
+          <div class="menu-item" @click="$router.push('/account_settings')">
             <div class="menu-icon blue">
               <svg viewBox="0 0 24 24"><path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" /></svg>
             </div>
@@ -104,7 +104,7 @@
           </div>
           <span class="service-text">有任何问题联系我～</span>
         </div>
-        <button class="contact-btn" @click="$router.push('/chat-support')">
+        <button class="contact-btn" @click="$router.push('/chat_support')">
           <svg viewBox="0 0 24 24"><path d="M20,2H4A2,2 0 0,0 2,4V22L6,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2M6,9H18V11H6M14,14H6V12H14M18,8H6V6H18" /></svg>
         </button>
       </section>
@@ -189,13 +189,13 @@ const recommendCourses = ref([
 }
 
 .logo {
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
   margin-right: 8px;
 }
 
 .app-title {
-  font-size: 18px;
+  font-size: 28px;
   font-weight: bold;
 }
 

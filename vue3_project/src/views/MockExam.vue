@@ -35,8 +35,8 @@
           </div>
         </div>
         <div class="card-footer">
-          <button class="mock-btn" @click="$router.push('/mock-exam-detail/' + course.id)">模拟考试</button>
-          <button class="practice-btn" @click="$router.push('/exam-practice/' + course.id)">考题训练</button>
+          <button class="mock-btn" @click="$router.push('/mock_exam_detail/' + course.id)">模拟考试</button>
+          <button class="practice-btn" @click="$router.push('/exam_practice/' + course.id)">考题训练</button>
         </div>
       </div>
     </main>

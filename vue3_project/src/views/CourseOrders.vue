@@ -61,13 +61,13 @@
           <button
             v-if="order.status === 'completed'"
             class="view-course-btn"
-            @click="$router.push('/course/' + order.courseId)"
+            @click="$router.push('/course_content/' + order.courseId)"
           >
             查看课程
           </button>
           <template v-else-if="order.status === 'pending'">
-            <button class="detail-btn">查看详情</button>
-            <button class="pay-btn">立即支付</button>
+            <button class="detail-btn" @click="$router.push('/course/' + order.courseId)">查看详情</button>
+            <button class="pay-btn" @click="$router.push('/purchase')">立即支付</button>
           </template>
         </div>
       </div>

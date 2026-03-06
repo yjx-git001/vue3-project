@@ -34,8 +34,8 @@
           <span class="study-time" v-if="course.studyTime">已学习时长：{{ course.studyTime }}</span>
           <span class="study-time" v-else>暂未开始学习</span>
           <div class="action-buttons">
-            <button v-if="course.canDownload" class="download-btn" @click="$router.push('/certificate-detail/' + course.id)">下载学时证明</button>
-            <button class="study-btn">去学习</button>
+            <button v-if="course.canDownload" class="download-btn" @click="$router.push('/certificate_detail/' + course.id)">下载学时证明</button>
+            <button class="study-btn" @click="$router.push('/course_content/' + course.id)">去学习</button>
           </div>
         </div>
       </div>

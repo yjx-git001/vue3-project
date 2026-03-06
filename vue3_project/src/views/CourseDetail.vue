@@ -32,7 +32,7 @@
           <span class="save-text">立省221↓</span>
         </div>
         <div class="content-list">
-          <div v-for="item in contentList" :key="item.id" class="content-item" @click="$router.push('/single-course/' + item.id)">
+          <div v-for="item in contentList" :key="item.id" class="content-item" @click="$router.push('/single_course/' + item.id)">
             <span class="item-title">{{ item.title }}</span>
             <span class="item-price">¥50</span>
           </div>

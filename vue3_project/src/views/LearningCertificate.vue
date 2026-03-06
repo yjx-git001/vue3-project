@@ -38,7 +38,7 @@
         </div>
         <button
           class="download-btn"
-          @click="$router.push('/certificate-detail/' + course.id)"
+          @click="$router.push('/certificate_detail/' + course.id)"
         >
           下载学时证明
         </button>

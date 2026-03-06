@@ -39,7 +39,7 @@
           </div>
         </div>
         <div class="card-footer">
-          <button class="view-btn" @click="$router.push('/wrong-question-detail/' + course.id)">查看</button>
+          <button class="view-btn" @click="$router.push('/wrong_question_detail/' + course.id)">查看</button>
         </div>
       </div>
     </main>
