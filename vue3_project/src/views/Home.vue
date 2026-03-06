@@ -92,11 +92,11 @@
         <svg viewBox="0 0 24 24"><path d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" /></svg>
         <span>首页</span>
       </div>
-      <div class="nav-item">
-        <svg viewBox="0 0 24 24"><path d="M12,3L2,12H5V20H19V12H22L12,3M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z" /></svg>
+      <div class="nav-item" @click="$router.push('/courses')">
+        <svg viewBox="0 0 24 24"><path d="M12,3L1,9L12,15L21,9V17H23V9M5,13.18V17.18L12,21L19,17.18V13.18L12,17L5,13.18Z" /></svg>
         <span>课程</span>
       </div>
-      <div class="nav-item">
+      <div class="nav-item" @click="$router.push('/profile')">
         <svg viewBox="0 0 24 24"><path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" /></svg>
         <span>个人中心</span>
       </div>
@@ -468,6 +468,8 @@ onUnmounted(() => {
   align-items: center;
   font-size: 12px;
   color: #999;
+  cursor: pointer;
+  transition: color 0.3s;
 }
 
 .nav-item.active {

@@ -11,7 +11,7 @@
     <main class="detail-content">
       <!-- 顶部视频区 -->
       <section class="video-section">
-        <img src="/images/57109042-1191-4000-aa2e-1ac96f71e73f.png" alt="Course" class="course-banner" />
+        <img src="/images/single-course.png" alt="Course" class="course-banner" />
         <div class="play-overlay">
           <div class="play-btn"></div>
         </div>
