@@ -33,12 +33,14 @@
             </div>
             <div class="course-info">
               <p class="course-title">{{ course.title }}</p>
-              <div class="course-meta">
-                <span class="course-price">¥{{ course.price }}</span>
-                <span class="original-price">¥{{ course.originalPrice }}</span>
+              <div class="course-footer">
+                <div class="course-meta">
+                  <span class="original-price">¥{{ course.originalPrice }}</span>
+                  <span class="course-price">¥{{ course.price }}</span>
+                </div>
+                <button v-if="course.isPurchased" class="learn-button" @click="$router.push('/course_content/' + course.id)">立即学习</button>
+                <button v-else class="buy-button" @click="$router.push('/course/' + course.id)">立即购买</button>
               </div>
-              <button v-if="course.isPurchased" class="learn-button" @click="$router.push('/course_content/' + course.id)">立即学习</button>
-              <button v-else class="buy-button" @click="$router.push('/course/' + course.id)">立即购买</button>
             </div>
           </div>
         </div>
@@ -76,7 +78,7 @@
           <div v-for="course in hotCourses" :key="course.id" class="course-card-grid">
             <img :src="course.image" :alt="course.title" class="course-image" />
             <p class="course-title">{{ course.title }}</p>
-            <div class="course-meta">
+            <div class="course-meta-grid">
               <span class="course-price">¥{{ course.price }}</span>
               <span class="original-price">¥{{ course.originalPrice }}</span>
             </div>
@@ -113,7 +115,7 @@ const courseSystems = ref([
   {
     id: 1,
     title: '港口特种设备检修课程',
-    tag: '体系课程',
+    tag: '12课时',
     price: 499,
     originalPrice: 500,
     image: '/images/course-banner.png',
@@ -122,7 +124,7 @@ const courseSystems = ref([
   {
     id: 2,
     title: '港口特种设备检修课程',
-    tag: '体系课程',
+    tag: '12课时',
     price: 499,
     originalPrice: 500,
     image: '/images/course-banner.png',
@@ -295,11 +297,15 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 0.5px;
 }
 
 .section-header h2 {
   font-size: 18px;
+}
+
+.promo-section .section-header h2 {
+  color: #fff;
 }
 
 .see-all {
@@ -315,7 +321,7 @@ onUnmounted(() => {
 }
 
 .course-card {
-  flex: 0 0 250px;
+  flex: 0 0 200px;
   background-color: #fff;
   border-radius: 10px;
   overflow: hidden;
@@ -327,12 +333,12 @@ onUnmounted(() => {
 
 .course-image {
   width: 100%;
-  height: 120px;
+  height: 100px;
   object-fit: cover;
 }
 
 .course-info {
-  padding: 10px;
+  padding: 8px;
 }
 
 .course-tag {
@@ -352,38 +358,44 @@ onUnmounted(() => {
   margin: 8px 0;
 }
 
+.course-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
 .course-meta {
   display: flex;
-  align-items: baseline;
-  margin-bottom: 10px;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .course-price {
-  font-size: 16px;
-  color: #ff4d4f;
+  font-size: 20px;
+  color: #ff6b35;
   font-weight: bold;
-  margin-right: 8px;
 }
 
 .original-price {
   font-size: 12px;
   color: #999;
   text-decoration: line-through;
+  margin-bottom: 4px;
 }
 
 .buy-button {
-  width: 100%;
-  padding: 8px;
+  padding: 8px 20px;
   background-color: #3b82f6;
   color: #fff;
   border: none;
-  border-radius: 5px;
+  border-radius: 10px;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .promo-section {
-  background-color: #fff;
-  padding: 15px;
+  background-color: #cce5ff;
+  padding: 5px 20px 15px 20px;
   border-radius: 10px;
   margin-bottom: 20px;
 }
@@ -392,6 +404,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   font-size: 14px;
+  color: #fff;
 }
 
 .timer-box {
@@ -405,7 +418,10 @@ onUnmounted(() => {
 .promo-card {
   display: flex;
   align-items: center;
-  margin-top: 15px;
+  margin-top: 8px;
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 10px;
 }
 
 .promo-image {
@@ -427,9 +443,15 @@ onUnmounted(() => {
   margin-top: 20px;
 }
 
+.promo-meta .learn-button {
+  width: auto;
+  padding: 8px 24px;
+  margin-left: 15px;
+}
+
 .promo-price {
   font-size: 20px;
-  color: #ff4d4f;
+  color: #ff6b35;
   font-weight: bold;
 }
 
@@ -439,7 +461,7 @@ onUnmounted(() => {
   background-color: #fff;
   color: #3b82f6;
   border: 1px solid #3b82f6;
-  border-radius: 5px;
+  border-radius: 10px;
   cursor: pointer;
 }
 
@@ -453,6 +475,42 @@ onUnmounted(() => {
   background-color: #fff;
   border-radius: 10px;
   overflow: hidden;
+  padding: 8px;
+}
+
+.course-card-grid .course-image {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+
+.course-card-grid .course-title {
+  font-size: 14px;
+  font-weight: bold;
+  margin: 0 0 8px 0;
+}
+
+.course-meta-grid {
+  display: flex;
+  justify-content: flex-start;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.course-card-grid .buy-button {
+  width: 85%;
+  margin: 0 auto;
+  display: block;
+  padding: 8px;
+  background-color: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
 }
 
 
