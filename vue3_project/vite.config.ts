@@ -1,4 +1,5 @@
 import { fileURLToPath, URL } from 'node:url'
+
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
@@ -9,8 +10,6 @@ export default defineConfig({
     vue(),
     vueDevTools(),
   ],
-  // 关键新增配置：适配 GitHub Pages 二级目录
-  base: '/vue3-project/', 
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
