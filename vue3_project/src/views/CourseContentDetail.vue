@@ -6,14 +6,6 @@
         <svg viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
       </button>
       <span class="nav-title">课程详情</span>
-      <div class="nav-actions">
-        <button class="icon-btn">
-          <svg viewBox="0 0 24 24"><path d="M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z" /></svg>
-        </button>
-        <button class="icon-btn">
-          <svg viewBox="0 0 24 24"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg>
-        </button>
-      </div>
     </header>
 
     <!-- 课程横幅 -->
@@ -47,9 +39,6 @@
     <main class="content-area">
       <!-- 目录 -->
       <div v-if="activeTab === 'catalog'" class="catalog-content">
-        <div class="chapter-header">
-          <span class="chapter-title">港机设备-起重机械</span>
-        </div>
         <div
           v-for="lesson in lessons"
           :key="lesson.id"
@@ -81,38 +70,27 @@
         </div>
         <div class="exam-grid">
           <div class="exam-card" @click="showExamModal = true">
-            <div class="exam-icon blue">
-              <svg viewBox="0 0 24 24"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" fill="currentColor" /></svg>
-            </div>
+            <img src="/images/exam-practice-icon.png" class="exam-icon-img" />
             <span class="exam-label">考题训练</span>
           </div>
           <div class="exam-card">
-            <div class="exam-icon red">
-              <svg viewBox="0 0 24 24"><path d="M11,15H13V17H11V15M11,7H13V13H11V7M12,2C6.47,2 2,6.5 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20Z" fill="currentColor" /></svg>
-            </div>
+            <img src="/images/error-record-icon.png" class="exam-icon-img" />
             <span class="exam-label">错题记录</span>
           </div>
           <div class="exam-card">
-            <div class="exam-icon green">
-              <svg viewBox="0 0 24 24"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M15,18V16H6V18H15M18,14V12H6V14H18Z" fill="currentColor" /></svg>
-            </div>
+            <img src="/images/exam-history-icon.png" class="exam-icon-img" />
             <span class="exam-label">模考记录</span>
           </div>
-          <div class="exam-card">
-            <div class="exam-icon purple">
-              <svg viewBox="0 0 24 24"><path d="M12,3L1,9L12,15L21,10.09V17H23V9M5,13.18V17.18L12,21L19,17.18V13.18L12,17L5,13.18Z" fill="currentColor" /></svg>
-            </div>
-            <span class="exam-label">模拟考试</span>
-          </div>
+        </div>
+        <div class="exam-card-wide">
+          <img src="/images/mock-exam-icon.png" class="exam-icon-img" />
+          <span class="exam-label">模拟考试</span>
         </div>
       </div>
 
     <!-- 考题训练弹窗 -->
     <div v-if="showExamModal" class="modal-overlay" @click="showExamModal = false">
       <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <span class="modal-title">港机设备-起重机械</span>
-        </div>
         <div class="question-types">
           <div class="type-item" @click="startPractice('single')">
             <span>单选题</span>
@@ -137,13 +115,6 @@
 
       <!-- 笔记 -->
       <div v-if="activeTab === 'notes'" class="notes-content">
-        <div class="chapter-header">
-          <span class="chapter-title">港机设备-起重机械</span>
-          <button class="switch-course-btn">
-            切换课程
-            <svg viewBox="0 0 24 24" class="dropdown-icon"><path d="M7,10L12,15L17,10H7Z" /></svg>
-          </button>
-        </div>
         <div class="notes-text">
           <p>在港口作业场景中，装载机(常被俗称"装载车")属于场内专用工程机械车辆,而非道路货运车辆。主要用于港口散货、件杂货的铲装、转运、堆垛作业。</p>
           <p>其车型定位和组分可以从以下维度明确:</p>
@@ -153,23 +124,22 @@
       </div>
 
       <!-- 附件 -->
-      <div v-if="activeTab === 'attachments'" class="attachments-content">
-        <div class="chapter-header">
-          <span class="chapter-title">港机设备-起重机械</span>
-        </div>
-        <div
-          v-for="file in attachments"
-          :key="file.id"
-          class="attachment-item"
-        >
-          <div class="file-icon pdf">
-            <svg viewBox="0 0 24 24"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" fill="white" /></svg>
+      <div v-if="activeTab === 'attachments'">
+        <div class="attachments-content">
+          <div
+            v-for="file in attachments"
+            :key="file.id"
+            class="attachment-item"
+          >
+            <div class="file-icon pdf">
+              <svg viewBox="0 0 24 24"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" fill="white" /></svg>
+            </div>
+            <div class="file-info">
+              <div class="file-name">{{ file.name }}</div>
+              <div class="file-size">{{ file.size }}</div>
+            </div>
+            <button class="download-file-btn">下载</button>
           </div>
-          <div class="file-info">
-            <div class="file-name">{{ file.name }}</div>
-            <div class="file-size">{{ file.size }}</div>
-          </div>
-          <button class="download-file-btn">下载</button>
         </div>
         <div class="file-type-icons">
           <div class="type-icon ppt">
@@ -375,9 +345,8 @@ const attachments = ref([
 }
 
 .tab-item {
-  flex: 1;
   text-align: center;
-  padding: 14px 0;
+  padding: 14px 16px;
   font-size: 15px;
   color: #666;
   cursor: pointer;
@@ -402,8 +371,9 @@ const attachments = ref([
 }
 
 .content-area {
-  background-color: #fff;
+  background-color: #f5f5f5;
   min-height: 400px;
+  padding: 12px;
 }
 
 .chapter-header {
@@ -411,7 +381,9 @@ const attachments = ref([
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  border-bottom: 1px solid #f0f0f0;
+  background: #fff;
+  border-radius: 12px;
+  margin-bottom: 12px;
 }
 
 .chapter-title {
@@ -446,7 +418,9 @@ const attachments = ref([
   align-items: center;
   gap: 12px;
   padding: 16px;
-  border-bottom: 1px solid #f5f5f5;
+  background: #fff;
+  border-radius: 12px;
+  margin-bottom: 10px;
 }
 
 .lesson-number {
@@ -457,10 +431,15 @@ const attachments = ref([
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: #2196f3;
   flex-shrink: 0;
+}
+
+.lesson-item:first-child .lesson-number {
+  background-color: #3b82f6;
+  color: #fff;
 }
 
 .lesson-info {
@@ -481,32 +460,42 @@ const attachments = ref([
 }
 
 .play-btn {
-  width: 36px;
-  height: 36px;
-  background: none;
+  width: 32px;
+  height: 32px;
+  background: #e0e0e0;
   border: none;
+  border-radius: 50%;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
 }
 
 .play-btn svg {
-  width: 100%;
-  height: 100%;
+  width: 18px;
+  height: 18px;
   fill: #999;
 }
 
+.play-btn.playing {
+  background: #3b82f6;
+}
+
 .play-btn.playing svg {
-  fill: #3b82f6;
+  fill: #fff;
 }
 
 .exam-content {
-  padding: 16px;
+  padding-bottom: 16px;
 }
 
 .exam-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 12px;
-  padding: 16px 0;
+  margin-bottom: 12px;
 }
 
 .exam-card {
@@ -514,48 +503,31 @@ const attachments = ref([
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  padding: 24px;
-  background-color: #f8f9fa;
-  border-radius: 12px;
+  padding: 24px 16px;
+  background-color: #fff;
+  border-radius: 16px;
   cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-.exam-card:nth-child(4) {
-  grid-column: 1 / -1;
-}
-
-.exam-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+.exam-card-wide {
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
+  gap: 12px;
+  padding: 20px 24px;
+  background-color: #fff;
+  border-radius: 16px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  margin: 0 auto;
+  width: 90%;
 }
 
-.exam-icon.blue {
-  background-color: #e3f2fd;
-  color: #2196f3;
-}
-
-.exam-icon.red {
-  background-color: #ffebee;
-  color: #f44336;
-}
-
-.exam-icon.green {
-  background-color: #e8f5e9;
-  color: #4caf50;
-}
-
-.exam-icon.purple {
-  background-color: #f3e5f5;
-  color: #9c27b0;
-}
-
-.exam-icon svg {
-  width: 24px;
-  height: 24px;
+.exam-icon-img {
+  width: 48px;
+  height: 48px;
 }
 
 .exam-label {
@@ -565,30 +537,33 @@ const attachments = ref([
 }
 
 .notes-content {
+  background-color: #fff;
   padding: 16px;
 }
 
 .notes-text {
-  padding: 16px 0;
   line-height: 1.8;
 }
 
 .notes-text p {
   font-size: 14px;
   color: #333;
-  margin: 0 0 12px 0;
+  margin: 0 0 16px 0;
 }
 
 .attachments-content {
-  padding: 16px;
+  padding: 12px;
 }
 
 .attachment-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 0;
-  border-bottom: 1px solid #f5f5f5;
+  padding: 16px;
+  background-color: #fff;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .file-icon {
@@ -637,8 +612,9 @@ const attachments = ref([
 .file-type-icons {
   display: flex;
   gap: 16px;
-  padding: 24px 0;
-  justify-content: center;
+  padding: 24px 16px;
+  justify-content: flex-start;
+  margin-top: 100px;
 }
 
 .type-icon {
@@ -720,8 +696,9 @@ const attachments = ref([
 
 .type-item {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
+  gap: 4px;
   padding: 16px;
   border-bottom: 1px solid #f0f0f0;
   cursor: pointer;

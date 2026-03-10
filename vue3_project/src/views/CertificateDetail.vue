@@ -50,15 +50,21 @@
           </div>
 
           <div class="issuer-section">
-            <div class="issuer-info">
-              <div class="issuer-logo">
-                <svg viewBox="0 0 24 24" class="logo-icon">
-                  <path d="M12,3L1,9L12,15L21,10.09V17H23V9M5,13.18V17.18L12,21L19,17.18V13.18L12,17L5,13.18Z" fill="#3b82f6" />
-                </svg>
-              </div>
-              <div class="issuer-text">
+            <div class="issuer-left">
+              <div class="issuer-info">
                 <span class="issuer-label">颁发机构</span>
-                <span class="issuer-name">港口学堂</span>
+                <div class="issuer-row">
+                  <div class="issuer-logo">
+                    <svg viewBox="0 0 24 24" class="logo-icon">
+                      <path d="M12,3L1,9L12,15L21,10.09V17H23V9M5,13.18V17.18L12,21L19,17.18V13.18L12,17L5,13.18Z" fill="#3b82f6" />
+                    </svg>
+                  </div>
+                  <span class="issuer-name">港口学堂</span>
+                </div>
+              </div>
+              <div class="issue-date">
+                <span class="date-label">发证日期：</span>
+                <span class="date-value">2024年10月24日</span>
               </div>
             </div>
             <div class="stamp">
@@ -68,11 +74,6 @@
                 <text x="50" y="65" text-anchor="middle" fill="#d32f2f" font-size="20" font-weight="bold">★</text>
               </svg>
             </div>
-          </div>
-
-          <div class="issue-date">
-            <span class="date-label">发证日期：</span>
-            <span class="date-value">2024年10月24日</span>
           </div>
         </div>
       </div>
@@ -165,8 +166,9 @@
 
 .certificate-card {
   background-color: #fff;
-  border-radius: 16px;
+  border-radius: 26px;
   padding: 30px 24px;
+  border: 2px solid #3b82f6;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
@@ -174,7 +176,6 @@
   text-align: center;
   margin-bottom: 30px;
   padding-bottom: 20px;
-  border-bottom: 2px solid #3b82f6;
 }
 
 .certificate-title {
@@ -200,6 +201,8 @@
   display: flex;
   flex-direction: column;
   margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .info-label {
@@ -218,13 +221,15 @@
   display: flex;
   gap: 40px;
   margin: 30px 0;
+  padding-bottom: 30px;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .stat-item {
   flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .stat-label {
@@ -242,11 +247,23 @@
 .issuer-section {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin: 30px 0 20px;
+  align-items: flex-end;
+  margin: 30px 0 0;
+}
+
+.issuer-left {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .issuer-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.issuer-row {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -295,9 +312,8 @@
 }
 
 .issue-date {
-  text-align: center;
-  padding-top: 20px;
-  border-top: 1px solid #f0f0f0;
+  text-align: left;
+  padding-top: 0;
 }
 
 .date-label {

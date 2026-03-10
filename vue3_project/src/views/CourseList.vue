@@ -41,14 +41,15 @@
       >
         <div class="course-image-wrapper">
           <img :src="course.image" :alt="course.title" class="course-image" />
-          <span v-if="course.tag" class="course-tag">{{ course.tag }}</span>
+          <span v-if="course.tag" :class="['course-tag', course.tag === '热门课程' ? 'course-tag--hot' : 'course-tag--system']">{{ course.tag }}</span>
         </div>
         <div class="course-info">
           <h3 class="course-title">{{ course.title }}</h3>
-          <div class="course-meta">
+          <div v-if="!course.purchased" class="course-meta">
             <span class="course-price">¥{{ course.price }}</span>
             <span class="original-price">¥{{ course.originalPrice }}</span>
           </div>
+          <div v-else class="purchased-tag">已购买</div>
           <button
             v-if="!course.purchased"
             class="buy-btn"
@@ -101,7 +102,9 @@ const filters = ref([
   { id: 'all', name: '全部' },
   { id: 'equipment', name: '港机设备' },
   { id: 'safety', name: '安全风险' },
-  { id: 'production', name: '生产装卸' }
+  { id: 'production', name: '生产装卸' },
+  { id: 'maintenance', name: '维护保养' },
+  { id: 'other', name: '其他' }
 ])
 
 const courseList = ref([
@@ -269,7 +272,6 @@ const courseList = ref([
   position: absolute;
   top: 8px;
   left: 8px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: #fff;
   padding: 4px 10px;
   border-radius: 4px;
@@ -277,8 +279,16 @@ const courseList = ref([
   font-weight: 500;
 }
 
-.course-tag:has-text("热门课程") {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+.course-tag--system {
+  background-color: rgba(255,255,255,0.8);
+  color: #3b82f6;
+  border-radius: 10px;
+}
+
+.course-tag--hot {
+  background-color: rgba(255,255,255,0.8);
+  color: #ff6b35;
+  border-radius: 10px;
 }
 
 .course-info {
@@ -308,9 +318,15 @@ const courseList = ref([
   gap: 6px;
 }
 
+.purchased-tag {
+  font-size: 14px;
+  color: #3b82f6;
+  font-weight: 500;
+}
+
 .course-price {
   font-size: 20px;
-  color: #ff4d4f;
+  color: #ff6b35;
   font-weight: 600;
 }
 
@@ -325,7 +341,7 @@ const courseList = ref([
   width: 100%;
   padding: 8px;
   border: none;
-  border-radius: 20px;
+  border-radius: 10px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;

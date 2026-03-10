@@ -9,14 +9,23 @@
     </header>
 
     <main class="main-content">
-      <!-- 视频播放区域 -->
-      <section class="video-section">
-        <img src="/images/course-banner.png" alt="Video Thumbnail" class="video-thumb" />
-        <div class="video-overlay">
-          <div class="play-button"></div>
+      <!-- 轮播区域 -->
+      <section class="carousel-section">
+        <div class="carousel-container" @touchstart="handleTouchStart" @touchmove="handleTouchMove" @touchend="handleTouchEnd">
+          <div class="carousel-track" :style="{ transform: `translateX(-${currentIndex * 100}%)` }">
+            <div v-for="(banner, index) in banners" :key="index" class="carousel-item">
+              <img :src="banner.image" alt="Banner" class="carousel-image" />
+              <div class="video-overlay">
+                <div class="play-button"></div>
+              </div>
+              <span class="video-tag">{{ banner.tag }}</span>
+              <span class="video-title">{{ banner.title }}</span>
+            </div>
+          </div>
         </div>
-        <span class="video-tag">大师课</span>
-        <span class="video-title">智慧港口运营与自动化管理</span>
+        <div class="carousel-dots">
+          <span v-for="(banner, index) in banners" :key="index" :class="['dot', { active: currentIndex === index }]" @click="currentIndex = index"></span>
+        </div>
       </section>
 
       <!-- 课程体系 -->
@@ -25,25 +34,15 @@
           <h2>课程体系</h2>
           <a href="#" class="see-all" @click.prevent="$router.push('/courses')">查看全部 ></a>
         </div>
-        <div class="course-list">
-          <div v-for="course in courseSystems" :key="course.id" class="course-card">
-            <div class="course-image-wrapper">
-              <img :src="course.image" :alt="course.title" class="course-image" />
-              <span class="course-tag">{{ course.tag }}</span>
-            </div>
-            <div class="course-info">
-              <p class="course-title">{{ course.title }}</p>
-              <div class="course-footer">
-                <div class="course-meta">
-                  <span class="original-price">¥{{ course.originalPrice }}</span>
-                  <span class="course-price">¥{{ course.price }}</span>
-                </div>
-                <button v-if="course.isPurchased" class="learn-button" @click="$router.push('/course_content/' + course.id)">立即学习</button>
-                <button v-else class="buy-button" @click="$router.push('/course/' + course.id)">立即购买</button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <CourseListContainer layout="horizontal">
+          <CourseCard
+            v-for="course in courseSystems"
+            :key="course.id"
+            :course="course"
+            layout="horizontal"
+            @click="handleCourseClick"
+          />
+        </CourseListContainer>
       </section>
 
       <!-- 限时秒杀 -->
@@ -74,17 +73,15 @@
         <div class="section-header">
           <h2>热门课程</h2>
         </div>
-        <div class="course-grid">
-          <div v-for="course in hotCourses" :key="course.id" class="course-card-grid">
-            <img :src="course.image" :alt="course.title" class="course-image" />
-            <p class="course-title">{{ course.title }}</p>
-            <div class="course-meta-grid">
-              <span class="course-price">¥{{ course.price }}</span>
-              <span class="original-price">¥{{ course.originalPrice }}</span>
-            </div>
-            <button class="buy-button" @click="$router.push('/course/' + course.id)">立即购买</button>
-          </div>
-        </div>
+        <CourseListContainer layout="grid">
+          <CourseCard
+            v-for="course in hotCourses"
+            :key="course.id"
+            :course="course"
+            layout="grid"
+            @click="handleCourseClick"
+          />
+        </CourseListContainer>
       </section>
 
     </main>
@@ -109,6 +106,56 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import CourseCard from '@/components/CourseCard.vue'
+import CourseListContainer from '@/components/CourseListContainer.vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const handleCourseClick = (course: any) => {
+  if (course.isPurchased) {
+    router.push(`/course_content/${course.id}`)
+  } else {
+    router.push(`/course/${course.id}`)
+  }
+}
+
+// 轮播数据
+const banners = ref([
+  { image: '/images/course-banner.png', tag: '大师课', title: '智慧港口运营与自动化管理' },
+  { image: '/images/course-banner.png', tag: '热门课', title: '港口特种设备检修课程' },
+  { image: '/images/course-banner.png', tag: '体系课', title: '港口安全知识培训' }
+])
+
+const currentIndex = ref(0)
+let touchStartX = 0
+let touchEndX = 0
+let autoPlayTimer: number
+
+const handleTouchStart = (e: TouchEvent) => {
+  touchStartX = e.touches[0]?.clientX || 0
+  clearInterval(autoPlayTimer)
+}
+
+const handleTouchMove = (e: TouchEvent) => {
+  touchEndX = e.touches[0]?.clientX || 0
+}
+
+const handleTouchEnd = () => {
+  if (touchStartX - touchEndX > 50 && currentIndex.value < banners.value.length - 1) {
+    currentIndex.value++
+  }
+  if (touchEndX - touchStartX > 50 && currentIndex.value > 0) {
+    currentIndex.value--
+  }
+  startAutoPlay()
+}
+
+const startAutoPlay = () => {
+  autoPlayTimer = window.setInterval(() => {
+    currentIndex.value = (currentIndex.value + 1) % banners.value.length
+  }, 3000)
+}
 
 // 模拟数据
 const courseSystems = ref([
@@ -172,10 +219,12 @@ function startCountdown() {
 
 onMounted(() => {
   startCountdown()
+  startAutoPlay()
 })
 
 onUnmounted(() => {
   clearInterval(timer)
+  clearInterval(autoPlayTimer)
 })
 </script>
 
@@ -224,16 +273,49 @@ onUnmounted(() => {
   margin: 0 auto;
 }
 
-.video-section {
-  position: relative;
-  border-radius: 10px;
-  overflow: hidden;
+.carousel-section {
   margin-bottom: 20px;
 }
 
-.video-thumb {
+.carousel-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.carousel-track {
+  display: flex;
+  transition: transform 0.3s ease;
+}
+
+.carousel-item {
+  min-width: 100%;
+  position: relative;
+}
+
+.carousel-image {
   width: 100%;
   display: block;
+}
+
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #ddd;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.dot.active {
+  background-color: #3b82f6;
 }
 
 .video-overlay {

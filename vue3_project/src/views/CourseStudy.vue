@@ -149,6 +149,8 @@ const courseList = ref([
   display: flex;
   gap: 12px;
   margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .course-image {
@@ -189,8 +191,11 @@ const courseList = ref([
 }
 
 .hours {
+  background-color: #e3f2fd;
+  color: #2196f3;
+  padding: 2px 8px;
+  border-radius: 4px;
   font-size: 12px;
-  color: #999;
 }
 
 .progress-section {
@@ -242,7 +247,7 @@ const courseList = ref([
   background-color: #fff;
   color: #3b82f6;
   border: 1px solid #3b82f6;
-  border-radius: 20px;
+  border-radius: 10px;
   font-size: 13px;
   cursor: pointer;
   white-space: nowrap;
@@ -253,7 +258,7 @@ const courseList = ref([
   background-color: #3b82f6;
   color: #fff;
   border: none;
-  border-radius: 20px;
+  border-radius: 10px;
   font-size: 13px;
   cursor: pointer;
   white-space: nowrap;

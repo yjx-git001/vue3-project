@@ -179,8 +179,8 @@ const examList = ref([
 
 .exam-stats {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  flex-direction: row;
+  gap: 16px;
 }
 
 .stat-item {
@@ -221,7 +221,7 @@ const examList = ref([
   background-color: #fff;
   color: #3b82f6;
   border: 1px solid #3b82f6;
-  border-radius: 20px;
+  border-radius: 10px;
   font-size: 14px;
   cursor: pointer;
 }
@@ -232,7 +232,7 @@ const examList = ref([
   background-color: #3b82f6;
   color: #fff;
   border: none;
-  border-radius: 20px;
+  border-radius: 10px;
   font-size: 14px;
   cursor: pointer;
 }

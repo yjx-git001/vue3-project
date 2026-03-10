@@ -198,11 +198,11 @@ const questionsList = ref([
 }
 
 .view-btn {
-  padding: 8px 40px;
+  padding: 8px 60px;
   background-color: #3b82f6;
   color: #fff;
   border: none;
-  border-radius: 20px;
+  border-radius: 10px;
   font-size: 14px;
   cursor: pointer;
 }

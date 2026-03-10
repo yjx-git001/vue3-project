@@ -22,8 +22,8 @@
           <span class="price">¥129</span>
           <span class="original-price">¥350</span>
         </div>
-        <p class="course-desc">课程详情：课程学习时长，基于课程的实操教学服务。本文档为初级课程，为保证学习效果，建议按照顺序进行学习。</p>
-        <button class="more-btn">查看更多 ></button>
+        <p class="course-desc">课程详情：课程学习时长，基于课程的实操教学服务。本文档为初级课程，为保证学习效果，建议按照顺序进行学习。<span v-if="showMore">本课程涵盖门机操作的核心知识点，包括设备结构认识、安全操作规范、日常维护保养等内容，适合零基础学员系统学习。完成本课程后可参加初级资格认证考试。</span></p>
+        <button class="more-btn" @click="showMore = !showMore">{{ showMore ? '收起 ∧' : '查看更多 >' }}</button>
       </section>
 
       <section class="course-content">
@@ -57,6 +57,8 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+
+const showMore = ref(false)
 
 const contentList = ref([
   { id: 1, title: '港机设备-起重机械' },
@@ -201,7 +203,7 @@ const contentList = ref([
 
 .price {
   font-size: 24px;
-  color: #ff4d4f;
+  color:  #ff6b35;
   font-weight: 600;
 }
 
@@ -254,7 +256,7 @@ const contentList = ref([
 .content-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 0;
 }
 
 .content-item {
@@ -262,8 +264,7 @@ const contentList = ref([
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
-  padding: 8px;
-  border-radius: 4px;
+  padding: 12px 8px;
   transition: background-color 0.2s;
 }
 
@@ -274,6 +275,9 @@ const contentList = ref([
 .item-title {
   font-size: 14px;
   color: #3b82f6;
+  text-decoration: underline;
+  text-decoration-color: #3b82f6;
+  text-underline-offset: 2px;
 }
 
 .item-price {

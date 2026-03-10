@@ -29,8 +29,7 @@
           <span class="price-value discount">-¥221.00</span>
         </div>
         <div class="price-row total">
-          <span class="price-label">合计</span>
-          <span class="price-value total-price">¥129.00</span>
+          <span class="price-value total-price">合计¥129.00</span>
         </div>
       </section>
 
@@ -38,23 +37,31 @@
       <section class="payment-section">
         <h3 class="section-title">支付方式</h3>
         <div class="payment-option" :class="{ active: paymentMethod === 'wechat' }" @click="paymentMethod = 'wechat'">
-          <div class="payment-left">
-            <svg viewBox="0 0 24 24" class="payment-icon wechat"><path d="M9.5,4C5.36,4 2,6.69 2,10C2,11.89 3.08,13.56 4.78,14.66L4,17L6.5,15.5C7.39,15.81 8.37,16 9.41,16C9.15,15.37 9,14.7 9,14C9,10.69 12.13,8 16,8C16.19,8 16.38,8 16.56,8.03C15.54,5.69 12.78,4 9.5,4M6.5,6.5C7.33,6.5 8,7.17 8,8C8,8.83 7.33,9.5 6.5,9.5C5.67,9.5 5,8.83 5,8C5,7.17 5.67,6.5 6.5,6.5M11.5,6.5C12.33,6.5 13,7.17 13,8C13,8.83 12.33,9.5 11.5,9.5C10.67,9.5 10,8.83 10,8C10,7.17 10.67,6.5 11.5,6.5M16,9C12.69,9 10,11.24 10,14C10,16.76 12.69,19 16,19C16.67,19 17.31,18.92 17.91,18.75L20,20L19.38,18.13C20.95,17.22 22,15.71 22,14C22,11.24 19.31,9 16,9M14,11.5C14.55,11.5 15,11.95 15,12.5C15,13.05 14.55,13.5 14,13.5C13.45,13.5 13,13.05 13,12.5C13,11.95 13.45,11.5 14,11.5M18,11.5C18.55,11.5 19,11.95 19,12.5C19,13.05 18.55,13.5 18,13.5C17.45,13.5 17,13.05 17,12.5C17,11.95 17.45,11.5 18,11.5Z" /></svg>
-            <span class="payment-name">微信支付</span>
-          </div>
-          <div class="payment-check" v-if="paymentMethod === 'wechat'">
-            <svg viewBox="0 0 24 24" class="check-icon"><path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" /></svg>
+          <div class="payment-row">
+            <div class="payment-left">
+              <svg viewBox="0 0 24 24" class="payment-icon wechat"><path d="M9.5,4C5.36,4 2,6.69 2,10C2,11.89 3.08,13.56 4.78,14.66L4,17L6.5,15.5C7.39,15.81 8.37,16 9.41,16C9.15,15.37 9,14.7 9,14C9,10.69 12.13,8 16,8C16.19,8 16.38,8 16.56,8.03C15.54,5.69 12.78,4 9.5,4M6.5,6.5C7.33,6.5 8,7.17 8,8C8,8.83 7.33,9.5 6.5,9.5C5.67,9.5 5,8.83 5,8C5,7.17 5.67,6.5 6.5,6.5M11.5,6.5C12.33,6.5 13,7.17 13,8C13,8.83 12.33,9.5 11.5,9.5C10.67,9.5 10,8.83 10,8C10,7.17 10.67,6.5 11.5,6.5M16,9C12.69,9 10,11.24 10,14C10,16.76 12.69,19 16,19C16.67,19 17.31,18.92 17.91,18.75L20,20L19.38,18.13C20.95,17.22 22,15.71 22,14C22,11.24 19.31,9 16,9M14,11.5C14.55,11.5 15,11.95 15,12.5C15,13.05 14.55,13.5 14,13.5C13.45,13.5 13,13.05 13,12.5C13,11.95 13.45,11.5 14,11.5M18,11.5C18.55,11.5 19,11.95 19,12.5C19,13.05 18.55,13.5 18,13.5C17.45,13.5 17,13.05 17,12.5C17,11.95 17.45,11.5 18,11.5Z" /></svg>
+              <span class="payment-name">微信支付</span>
+            </div>
+            <div class="payment-check" v-if="paymentMethod === 'wechat'">
+              <svg viewBox="0 0 24 24" class="check-icon"><path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" /></svg>
+            </div>
+            <div class="payment-uncheck" v-else></div>
           </div>
         </div>
         <div class="payment-option" :class="{ active: paymentMethod === 'card' }" @click="paymentMethod = 'card'">
-          <div class="payment-left">
-            <svg viewBox="0 0 24 24" class="payment-icon card"><path d="M20,8H4V6H20M20,18H4V12H20M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z" /></svg>
-            <span class="payment-name">学习卡</span>
+          <div class="payment-row">
+            <div class="payment-left">
+              <svg viewBox="0 0 24 24" class="payment-icon card"><path d="M20,8H4V6H20M20,18H4V12H20M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z" /></svg>
+              <span class="payment-name">学习卡</span>
+            </div>
+            <div class="payment-check" v-if="paymentMethod === 'card'">
+              <svg viewBox="0 0 24 24" class="check-icon"><path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" /></svg>
+            </div>
+            <div class="payment-uncheck" v-else></div>
           </div>
-          <div class="payment-radio" :class="{ checked: paymentMethod === 'card' }"></div>
-        </div>
-        <div v-if="paymentMethod === 'card'" class="card-input-section">
-          <input type="text" class="card-input" placeholder="请输入学习卡卡号" v-model="cardNumber" />
+          <div v-if="paymentMethod === 'card'" class="card-input-section" @click.stop>
+            <input type="text" class="card-input" placeholder="请输入卡密" v-model="cardNumber" />
+          </div>
         </div>
       </section>
     </main>
@@ -195,11 +202,17 @@ const cardNumber = ref('')
   border-top: 1px solid #eee;
   margin-top: 8px;
   padding-top: 16px;
+  justify-content: flex-end;
 }
 
 .price-label {
   font-size: 15px;
   color: #666;
+}
+
+.total-label {
+  color: #333;
+  font-weight: 600;
 }
 
 .price-value {
@@ -209,17 +222,16 @@ const cardNumber = ref('')
 }
 
 .price-value.discount {
-  color: #ff6a00;
+  color: #333;
 }
 
 .price-value.total-price {
   font-size: 20px;
-  color: #ff6a00;
+  color: #333;
   font-weight: 700;
 }
 
 .payment-section {
-  background-color: #fff;
   border-radius: 12px;
   padding: 16px;
 }
@@ -233,19 +245,24 @@ const cardNumber = ref('')
 
 .payment-option {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
   padding: 16px;
   border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  border-radius: 16px;
   margin-bottom: 12px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
+.payment-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .payment-option.active {
-  border-color: #07c160;
-  background-color: #f0f9ff;
+  border-color: #e0e0e0;
+  background-color: #fff;
 }
 
 .payment-left {
@@ -289,41 +306,27 @@ const cardNumber = ref('')
   fill: #fff;
 }
 
-.payment-radio {
-  width: 18px;
-  height: 18px;
+.payment-uncheck {
+  width: 20px;
+  height: 20px;
   border: 2px solid #ccc;
-  border-radius: 50%;
-  position: relative;
-}
-
-.payment-radio.checked {
-  border-color: #ff6a00;
-}
-
-.payment-radio.checked::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 10px;
-  height: 10px;
-  background-color: #ff6a00;
   border-radius: 50%;
 }
 
 .card-input-section {
   margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #eee;
 }
 
 .card-input {
   width: 100%;
-  padding: 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 15px;
+  padding: 4px 0;
+  border: none;
   outline: none;
+  font-size: 15px;
+  color: #999;
+  background: transparent;
 }
 
 .card-input:focus {

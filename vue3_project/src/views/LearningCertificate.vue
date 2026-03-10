@@ -36,12 +36,14 @@
             </div>
           </div>
         </div>
-        <button
-          class="download-btn"
-          @click="$router.push('/certificate_detail/' + course.id)"
-        >
-          下载学时证明
-        </button>
+        <div class="button-wrapper">
+          <button
+            class="download-btn"
+            @click="$router.push('/certificate_detail/' + course.id)"
+          >
+            下载学时证明
+          </button>
+        </div>
       </div>
     </main>
   </div>
@@ -154,8 +156,8 @@ const certificateList = ref([
 
 .course-stats {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  flex-direction: row;
+  gap: 16px;
   margin-bottom: 8px;
 }
 
@@ -178,9 +180,13 @@ const certificateList = ref([
   font-size: 14px;
 }
 
+.button-wrapper {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .download-btn {
-  width: 100%;
-  padding: 12px;
+  padding: 12px 24px;
   background-color: #3b82f6;
   color: #fff;
   border: none;

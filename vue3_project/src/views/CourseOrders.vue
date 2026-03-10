@@ -24,7 +24,7 @@
       <div
         v-for="order in ordersList"
         :key="order.id"
-        class="order-card"
+        :class="['order-card', order.status]"
       >
         <div class="card-header">
           <img :src="order.image" :alt="order.courseName" class="course-image" />
@@ -38,7 +38,7 @@
           </div>
         </div>
 
-        <div class="order-details">
+        <div v-if="order.status === 'completed'" class="order-details">
           <div class="detail-row">
             <span class="label">实际支付：</span>
             <span class="value price">¥{{ order.actualPayment }}</span>
@@ -254,7 +254,7 @@ const getStatusText = (status: string) => {
   top: 0;
   right: 0;
   padding: 4px 12px;
-  border-radius: 12px;
+  border-radius: 0;
   font-size: 13px;
   font-weight: 500;
 }
@@ -262,11 +262,13 @@ const getStatusText = (status: string) => {
 .order-status-badge.completed {
   background-color: #e8f5e9;
   color: #4caf50;
+  border: 1px solid #4caf50;
 }
 
 .order-status-badge.pending {
   background-color: #fff3e0;
   color: #ff9800;
+  border: 1px solid #ff9800;
 }
 
 .order-details {
@@ -307,27 +309,29 @@ const getStatusText = (status: string) => {
   background-color: #fff;
   color: #3b82f6;
   border: 1px solid #3b82f6;
-  border-radius: 20px;
+  border-radius: 10px;
   font-size: 14px;
   cursor: pointer;
 }
 
 .detail-btn {
+  flex: 1;
   padding: 8px 24px;
   background-color: #fff;
   color: #3b82f6;
   border: 1px solid #3b82f6;
-  border-radius: 20px;
+  border-radius: 10px;
   font-size: 14px;
   cursor: pointer;
 }
 
 .pay-btn {
+  flex: 1;
   padding: 8px 32px;
   background-color: #3b82f6;
   color: #fff;
   border: none;
-  border-radius: 20px;
+  border-radius: 10px;
   font-size: 14px;
   cursor: pointer;
 }
