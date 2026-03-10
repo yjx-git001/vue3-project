@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router' // 关键：替换为 createWebHashHistory
 import Login from '@/views/Login.vue'
 import Home from '@/views/Home.vue'
 import CourseList from '@/views/CourseList.vue'
@@ -21,7 +21,8 @@ import ChatSupport from '@/views/ChatSupport.vue'
 import CourseContentDetail from '@/views/CourseContentDetail.vue'
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  // 关键修改：从 createWebHistory 改为 createWebHashHistory
+  history: createWebHashHistory(import.meta.env.BASE_URL), 
   routes: [
     {
       path: '/',
