@@ -82,18 +82,22 @@
 
         <!-- 筛选标签 -->
         <div class="filter-tabs">
-          <button :class="['filter-btn', { active: filterType === 'all' }]" @click="filterType = 'all'">
-            <svg viewBox="0 0 24 24" class="filter-icon">
+          <button class="clear-btn" @click="clearAnswers">
+            <svg viewBox="0 0 24 24" class="clear-icon">
               <path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19Z" />
             </svg>
             清空答题卡
           </button>
-          <button :class="['filter-btn', { active: filterType === 'answered' }]" @click="filterType = 'answered'">
-            已答
-          </button>
-          <button :class="['filter-btn', { active: filterType === 'unanswered' }]" @click="filterType = 'unanswered'">
-            未答
-          </button>
+          <div class="status-indicators">
+            <div class="status-item">
+              <span class="status-dot answered-dot"></span>
+              <span class="status-text">已答</span>
+            </div>
+            <div class="status-item">
+              <span class="status-dot unanswered-dot"></span>
+              <span class="status-text">未答</span>
+            </div>
+          </div>
         </div>
 
         <!-- 题号网格 -->
@@ -171,6 +175,10 @@ const getQuestionStatus = (num: number) => {
     return 'answered'
   }
   return ''
+}
+
+function clearAnswers() {
+  answers.value = {}
 }
 </script>
 
@@ -411,7 +419,8 @@ const getQuestionStatus = (num: number) => {
   border-radius: 20px 20px 0 0;
   padding: 20px;
   width: 100%;
-  max-height: 80vh;
+  height: 85vh;
+  max-height: 85vh;
   overflow-y: auto;
 }
 
@@ -425,33 +434,61 @@ const getQuestionStatus = (num: number) => {
 
 .filter-tabs {
   display: flex;
-  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 20px;
 }
 
-.filter-btn {
-  padding: 6px 16px;
-  background-color: #f5f5f5;
-  border: 1px solid #e0e0e0;
-  border-radius: 20px;
+.clear-btn {
+  padding: 8px 16px;
+  background-color: #fff;
+  border: 1px solid #ff9800;
+  border-radius: 10px;
   font-size: 14px;
-  color: #666;
+  color: #ff9800;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
-.filter-btn.active {
-  background-color: #fff3e0;
-  border-color: #ff9800;
-  color: #ff9800;
-}
-
-.filter-icon {
+.clear-icon {
   width: 16px;
   height: 16px;
-  fill: currentColor;
+  fill: #ff9800;
+}
+
+.status-indicators {
+  display: flex;
+  gap: 16px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.answered-dot {
+  background-color: #3b82f6;
+  border-radius: 4px;
+}
+
+.unanswered-dot {
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.status-text {
+  font-size: 14px;
+  color: #666;
 }
 
 .question-grid {
@@ -476,5 +513,6 @@ const getQuestionStatus = (num: number) => {
 .question-number.answered {
   background-color: #e3f2fd;
   color: #3b82f6;
+  font-weight: 600;
 }
 </style>

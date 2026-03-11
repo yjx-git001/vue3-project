@@ -183,15 +183,17 @@ const courseList = ref([
   font-weight: bold;
 }
 
+
 .course-tabs {
   display: flex;
   background-color: #fff;
-  padding: 12px 16px;
-  gap: 24px;
+  padding: 12px 0;
   border-bottom: 1px solid #eee;
 }
 
 .tab-item {
+  flex: 1;
+  text-align: center;
   font-size: 15px;
   color: #666;
   cursor: pointer;
