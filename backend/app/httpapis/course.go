@@ -1,8 +1,8 @@
 package httpapis
 
 import (
-	"backend/app/pkg/api"
-	"backend/app/pkg/logger"
+	"backend/pkg/api"
+	"backend/pkg/logger"
 	services "backend/app/server"
 	"backend/app/server/dto"
 

@@ -1,7 +1,7 @@
 package models
 
 import (
-	"backend/app/pkg/utils"
+	"backend/pkg/utils"
 	"fmt"
 
 	"gorm.io/gorm"

@@ -1,7 +1,7 @@
 package api
 
 import (
-	"backend/app/pkg/db_query"
+	"backend/pkg/db_query"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

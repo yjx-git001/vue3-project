@@ -2,7 +2,7 @@ package dao
 
 import (
 	"backend/app/models"
-	"backend/app/pkg/db"
+	"backend/pkg/db"
 
 	"gorm.io/gorm"
 )

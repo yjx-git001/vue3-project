@@ -2,8 +2,8 @@ package dao
 
 import (
 	"backend/app/models"
-	"backend/app/pkg/db"
-	"backend/app/pkg/db_query"
+	"backend/pkg/db"
+	"backend/pkg/db_query"
 	"backend/app/server/dto"
 
 	"gorm.io/gorm"

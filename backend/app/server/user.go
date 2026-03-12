@@ -2,8 +2,8 @@ package services
 
 import (
 	"backend/app/models"
-	"backend/app/pkg/db"
-	"backend/app/pkg/jwt"
+	"backend/pkg/db"
+	"backend/pkg/jwt"
 	"backend/app/server/dao"
 	"backend/app/server/dto"
 	"errors"

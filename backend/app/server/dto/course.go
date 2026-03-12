@@ -2,7 +2,7 @@ package dto
 
 import (
 	"backend/app/models"
-	"backend/app/pkg/db_query"
+	"backend/pkg/db_query"
 )
 
 type CourseGetPageReq struct {

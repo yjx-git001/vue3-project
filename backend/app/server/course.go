@@ -2,9 +2,9 @@ package services
 
 import (
 	"backend/app/models"
-	"backend/app/pkg/db"
-	"backend/app/pkg/db_query"
-	"backend/app/pkg/logger"
+	"backend/pkg/db"
+	"backend/pkg/db_query"
+	"backend/pkg/logger"
 	"backend/app/server/dao"
 	"backend/app/server/dto"
 	"errors"

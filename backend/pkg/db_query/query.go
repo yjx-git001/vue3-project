@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"backend/app/pkg/logger"
+	"backend/pkg/logger"
 
 	"gorm.io/gorm"
 )

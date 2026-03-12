@@ -1,7 +1,7 @@
 package models
 
 import (
-	"backend/app/pkg/logger"
+	"backend/pkg/logger"
 	"backend/config"
 )
 
