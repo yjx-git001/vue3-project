@@ -6,9 +6,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func registerCourseRouter(api *gin.RouterGroup) {
+func init() {
+	apiRouters = append(apiRouters, registerCourseRouter)
+}
+
+func registerCourseRouter(apiGroup *gin.RouterGroup) {
 	courseApi := httpapis.CourseApi{}
-	course := api.Group("/courses")
+
+	course := apiGroup.Group("/api/courses")
 	{
 		course.GET("/list", courseApi.GetPage)
 		course.GET("/detail", courseApi.GetDetail)

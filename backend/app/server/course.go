@@ -2,11 +2,11 @@ package services
 
 import (
 	"backend/app/models"
+	"backend/app/pkg/db"
 	"backend/app/pkg/db_query"
 	"backend/app/pkg/logger"
 	"backend/app/server/dao"
 	"backend/app/server/dto"
-	"context"
 	"errors"
 )
 
@@ -14,14 +14,12 @@ type courseService struct{}
 
 var CourseService = new(courseService)
 
-func (s courseService) GetPage(ctx context.Context, req *dto.CourseGetPageReq) (*db_query.PaginationQ, error) {
-	result, err := dao.CourseDao.GetPage(ctx, req)
+func (s courseService) GetPage(req *dto.CourseGetPageReq) (*db_query.PaginationQ, error) {
+	result, err := dao.CourseDao.GetPage(db.Db, req)
 	if err != nil {
 		logger.Sugar.Error(err)
 		return nil, err
 	}
-
-	// 转换数据并设置 StatusName
 	for i, c := range result.Data.([]models.Course) {
 		result.Data.([]models.Course)[i].Status = c.Status
 	}
@@ -48,7 +46,7 @@ func (s courseService) GetPage(ctx context.Context, req *dto.CourseGetPageReq) (
 }
 
 func (s courseService) GetDetail(id uint) (dto.CourseDetailResp, error) {
-	course, err := dao.CourseDao.GetByID(id)
+	course, err := dao.CourseDao.GetByID(db.Db, id)
 	if err != nil {
 		return dto.CourseDetailResp{}, errors.New("课程不存在")
 	}

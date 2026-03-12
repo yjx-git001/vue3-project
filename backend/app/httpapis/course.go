@@ -3,8 +3,8 @@ package httpapis
 import (
 	"backend/app/pkg/api"
 	"backend/app/pkg/logger"
+	services "backend/app/server"
 	"backend/app/server/dto"
-	"backend/app/server/services"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -22,10 +22,10 @@ func (a CourseApi) GetPage(c *gin.Context) {
 		return
 	}
 
-	result, err := services.CourseService.GetPage(c.Request.Context(), &req)
+	result, err := services.CourseService.GetPage(&req)
 	if err != nil {
-		logger.Sugar.Errorf("CourseApi get page error: %s", err)
-		a.Error(500, err, "获取课程失败")
+		logger.Sugar.Errorf("get page error: %s", err.Error())
+		a.ErrorApi(err)
 		return
 	}
 
@@ -42,8 +42,8 @@ func (a CourseApi) GetDetail(c *gin.Context) {
 
 	result, err := services.CourseService.GetDetail(req.ID)
 	if err != nil {
-		logger.Sugar.Errorf("CourseApi get detail error: %s", err)
-		a.Error(404, err, "课程不存在")
+		logger.Sugar.Errorf("get detail error: %s", err.Error())
+		a.ErrorApi(err)
 		return
 	}
 

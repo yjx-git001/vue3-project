@@ -5,6 +5,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var apiRouters = make([]func(group *gin.RouterGroup), 0)
+
+func Init(r *gin.RouterGroup) error {
+	v := r.Group("/")
+
+	for _, f := range apiRouters {
+		f(v)
+	}
+
+	return nil
+}
+
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
 
@@ -15,9 +27,7 @@ func SetupRouter() *gin.Engine {
 		AllowCredentials: true,
 	}))
 
-	api := r.Group("/api")
-	registerUserRouter(api)
-	registerCourseRouter(api)
+	Init(r.Group("/"))
 
 	return r
 }
