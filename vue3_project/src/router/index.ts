@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Login from '@/views/Login.vue'
+import Register from '@/views/Register.vue'
 import Home from '@/views/Home.vue'
 import CourseList from '@/views/CourseList.vue'
 import CourseDetail from '@/views/CourseDetail.vue'
@@ -34,6 +35,12 @@ const router = createRouter({
       name: 'login',
       component: Login
       // 登录页面
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: Register
+      // 注册页面
     },
     {
       path: '/courses',

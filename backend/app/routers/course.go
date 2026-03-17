@@ -17,5 +17,7 @@ func registerCourseRouter(apiGroup *gin.RouterGroup) {
 	{
 		course.GET("/list", courseApi.GetPage)
 		course.GET("/detail", courseApi.GetDetail)
+		course.POST("/system", courseApi.CreateSystem)
+		course.POST("/single", courseApi.CreateSingle)
 	}
 }

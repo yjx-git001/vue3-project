@@ -40,7 +40,7 @@ func (a CourseApi) GetDetail(c *gin.Context) {
 		return
 	}
 
-	result, err := services.CourseService.GetDetail(req.ID)
+	result, err := services.CourseService.GetDetail(&req)
 	if err != nil {
 		logger.Sugar.Errorf("get detail error: %s", err.Error())
 		a.ErrorApi(err)
@@ -48,4 +48,40 @@ func (a CourseApi) GetDetail(c *gin.Context) {
 	}
 
 	a.OK(result, "ok")
+}
+
+func (a CourseApi) CreateSystem(c *gin.Context) {
+	var req dto.CourseSystemCreateReq
+	if err := a.MakeContext(c).Bind(&req, binding.JSON).Errors; err != nil {
+		logger.Sugar.Errorf("binding req data error: %s", err)
+		a.ErrorApi(err)
+		return
+	}
+
+	err := services.CourseService.CreateSystem(&req)
+	if err != nil {
+		logger.Sugar.Errorf("create system course error: %s", err.Error())
+		a.ErrorApi(err)
+		return
+	}
+
+	a.OK(nil, "创建成功")
+}
+
+func (a CourseApi) CreateSingle(c *gin.Context) {
+	var req dto.CourseSingleCreateReq
+	if err := a.MakeContext(c).Bind(&req, binding.JSON).Errors; err != nil {
+		logger.Sugar.Errorf("binding req data error: %s", err)
+		a.ErrorApi(err)
+		return
+	}
+
+	err := services.CourseService.CreateSingle(&req)
+	if err != nil {
+		logger.Sugar.Errorf("create single course error: %s", err.Error())
+		a.ErrorApi(err)
+		return
+	}
+
+	a.OK(nil, "创建成功")
 }

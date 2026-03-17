@@ -180,12 +180,24 @@
       </div>
 
       <!-- 退出登录 -->
-      <button class="logout-btn">退出登录</button>
+      <button class="logout-btn" @click="handleLogout">退出登录</button>
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+function handleLogout() {
+  // 清除本地存储的 token 和用户信息
+  localStorage.removeItem('token')
+  localStorage.removeItem('userInfo')
+
+  // 跳转到登录页面
+  router.push('/login')
+}
 </script>
 
 <style scoped>

@@ -9,7 +9,8 @@ func Init() error {
 	logger.Sugar.Info("models auto migrate")
 	err := config.DB.AutoMigrate(
 		&User{},
-		&Course{},
+		&CourseSystem{},
+		&CourseSingle{},
 	)
 	if err != nil {
 		logger.Sugar.Errorf("migrate models err: %s", err)

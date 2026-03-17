@@ -2,11 +2,11 @@ import request from './request'
 
 // 用户相关接口
 export const userApi = {
-  sendCode(phone: string) {
-    return request.post('/login/send-code', { phone })
+  register(username: string, phone: string, password: string) {
+    return request.post('/user/register', { username, phone, password })
   },
-  login(phone: string, code: string) {
-    return request.post('/login', { phone, code })
+  login(phone: string, password: string) {
+    return request.post('/user/login', { phone, password })
   },
   getUserInfo() {
     return request.get('/user/info')

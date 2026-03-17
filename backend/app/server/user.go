@@ -34,6 +34,7 @@ func (s userService) Register(req *dto.RegisterReq) error {
 
 	// 创建用户
 	user := &models.User{
+		Name:     req.Username,
 		Phone:    req.Phone,
 		Password: string(hashedPassword),
 	}

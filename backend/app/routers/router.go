@@ -27,6 +27,9 @@ func SetupRouter() *gin.Engine {
 		AllowCredentials: true,
 	}))
 
+	// 静态文件服务
+	r.Static("/uploads", "./uploads")
+
 	Init(r.Group("/"))
 
 	return r
