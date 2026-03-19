@@ -39,6 +39,15 @@ func (d orderDao) CancelIfPending(db *gorm.DB, id uint) error {
 		Update("status", models.OrderStatusCancelled).Error
 }
 
+func (d orderDao) GetPendingByCourseAndUser(db *gorm.DB, userID uint, courseEk int64) (*models.Order, error) {
+	var order models.Order
+	err := db.Where("user_id = ? AND course_ek = ? AND status = ?", userID, courseEk, models.OrderStatusPending).First(&order).Error
+	if err != nil {
+		return nil, err
+	}
+	return &order, nil
+}
+
 func (d orderDao) ExistsByCourseAndUser(db *gorm.DB, userID uint, courseEk int64) (bool, error) {
 	// 检查是否直接购买了该课程
 	var count int64

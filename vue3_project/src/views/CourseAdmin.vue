@@ -128,11 +128,11 @@
           <input v-model.number="systemForm.courseTime" type="number" required />
         </div>
         <div class="form-group">
-          <label>价格(分)：</label>
+          <label>价格(元)：</label>
           <input v-model.number="systemForm.price" type="number" required />
         </div>
         <div class="form-group">
-          <label>原价(分)：</label>
+          <label>原价(元)：</label>
           <input v-model.number="systemForm.originalPrice" type="number" required />
         </div>
         <div class="form-group">
@@ -189,11 +189,11 @@
           <input v-model.number="singleForm.courseTime" type="number" required />
         </div>
         <div class="form-group">
-          <label>价格(分)：</label>
+          <label>价格(元)：</label>
           <input v-model.number="singleForm.price" type="number" required />
         </div>
         <div class="form-group">
-          <label>原价(分)：</label>
+          <label>原价(元)：</label>
           <input v-model.number="singleForm.originalPrice" type="number" required />
         </div>
         <div class="form-group">

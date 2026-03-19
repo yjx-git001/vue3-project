@@ -85,6 +85,7 @@ const courseDetail = ref<any>({})
 const imageBaseUrl = 'http://localhost:8080'
 const paying = ref(false)
 const payError = ref('')
+const orderNo = ref('')
 
 const price = computed(() => courseDetail.value.price || 0)
 
@@ -95,15 +96,26 @@ onMounted(async () => {
     const res: any = await courseApi.getCourseDetail(ek)
     courseDetail.value = res.data
   } catch (e) {}
+  // 进入购买页即创建待支付订单
+  try {
+    const res: any = await orderApi.createPending(ek)
+    orderNo.value = res.data?.orderNo || ''
+  } catch (e: any) {
+    payError.value = e.response?.data?.msg || '创建订单失败'
+  }
 })
 
 const handleSubmit = async () => {
+  if (!orderNo.value) {
+    payError.value = '订单创建失败，请返回重试'
+    return
+  }
   paying.value = true
   payError.value = ''
   try {
     const ek = Number(route.query.ek)
     const payType = paymentMethod.value === 'wechat' ? 1 : 2
-    await orderApi.create(ek, payType, cardNumber.value || undefined)
+    await orderApi.pay(orderNo.value, payType, cardNumber.value || undefined)
     router.push('/course/' + ek)
   } catch (e: any) {
     payError.value = e.response?.data?.msg || '支付失败'

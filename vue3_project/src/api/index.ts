@@ -83,6 +83,12 @@ export const orderApi = {
   create(courseEk: number, payType: number, cardCode?: string) {
     return request.post('/order/create', { courseEk, payType, cardCode })
   },
+  createPending(courseEk: number) {
+    return request.post('/order/pending', { courseEk })
+  },
+  pay(orderNo: string, payType: number, cardCode?: string) {
+    return request.post('/order/pay', { orderNo, payType, cardCode })
+  },
   getMyOrders() {
     return request.get('/order/my')
   },

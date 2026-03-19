@@ -21,6 +21,20 @@ func (s orderService) CreatePending(userID uint, courseEk int64) (*models.Order,
 	if err != nil {
 		return nil, errors.New("课程不存在")
 	}
+
+	purchased, err := dao.OrderDao.ExistsByCourseAndUser(db.Db, userID, courseEk)
+	if err != nil {
+		return nil, err
+	}
+	if purchased {
+		return nil, errors.New("您已购买过该课程")
+	}
+
+	// 已有待支付订单则直接返回，不重复创建
+	if existing, err := dao.OrderDao.GetPendingByCourseAndUser(db.Db, userID, courseEk); err == nil {
+		return existing, nil
+	}
+
 	order := &models.Order{
 		OrderNo:    fmt.Sprintf("%s%d", time.Now().Format("20060102150405"), time.Now().UnixNano()%100000),
 		UserID:     userID,
@@ -77,6 +91,14 @@ func (s orderService) Create(userID uint, req *dto.CreateOrderReq) error {
 		return errors.New("课程不存在")
 	}
 
+	purchased, err := dao.OrderDao.ExistsByCourseAndUser(db.Db, userID, req.CourseEk)
+	if err != nil {
+		return err
+	}
+	if purchased {
+		return errors.New("您已购买过该课程")
+	}
+
 	if req.PayType == models.PayTypeCard {
 		if req.CardCode == "" {
 			return errors.New("请输入卡密")
@@ -110,17 +132,35 @@ func (s orderService) GetByUserID(userID uint) ([]dto.OrderResp, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// 批量查课程图片
+	ekSet := make([]int64, 0, len(list))
+	for _, o := range list {
+		ekSet = append(ekSet, o.CourseEk)
+	}
+	imageMap := make(map[int64]string)
+	if len(ekSet) > 0 {
+		var courses []models.Course
+		db.Db.Select("ek, image").Where("ek IN ?", ekSet).Find(&courses)
+		for _, c := range courses {
+			imageMap[c.Ek] = c.Image
+		}
+	}
+
 	result := make([]dto.OrderResp, 0, len(list))
 	for _, o := range list {
 		result = append(result, dto.OrderResp{
-			ID:         o.ID,
-			OrderNo:    o.OrderNo,
-			CourseEk:   o.CourseEk,
-			CourseName: o.CourseName,
-			Price:      o.Price,
-			PayType:    o.PayType,
-			PayTypeStr: models.PayTypeMap[o.PayType],
-			CreatedAt:  o.CreatedAt.Format("2006-01-02 15:04:05"),
+			ID:          o.ID,
+			OrderNo:     o.OrderNo,
+			CourseEk:    o.CourseEk,
+			CourseName:  o.CourseName,
+			CourseImage: imageMap[o.CourseEk],
+			Price:       o.Price,
+			PayType:     o.PayType,
+			PayTypeStr:  models.PayTypeMap[o.PayType],
+			Status:      o.Status,
+			StatusStr:   models.OrderStatusMap[o.Status],
+			CreatedAt:   o.CreatedAt.Format("2006-01-02 15:04:05"),
 		})
 	}
 	return result, nil

@@ -12,14 +12,19 @@
       <div v-if="!orders.length" class="empty">暂无订单</div>
       <div v-for="order in orders" :key="order.id" class="order-card">
         <div class="card-header">
+          <img
+            :src="order.courseImage ? imageBaseUrl + order.courseImage : '/images/course-detail-banner.png'"
+            alt="课程图片"
+            class="course-image"
+          />
           <div class="course-info">
             <h3 class="course-name">{{ order.courseName }}</h3>
             <div class="course-price">¥{{ (order.price / 100).toFixed(2) }}</div>
           </div>
-          <div class="order-status-badge completed">已完成</div>
+          <div class="order-status-badge" :class="statusClass(order.status)">{{ statusText(order) }}</div>
         </div>
         <div class="order-details">
-          <div class="detail-row">
+          <div class="detail-row" v-if="order.payTypeStr">
             <span class="label">支付方式：</span>
             <span class="value">{{ order.payTypeStr }}</span>
           </div>
@@ -33,7 +38,13 @@
           </div>
         </div>
         <div class="card-footer">
-          <button class="view-course-btn" @click="$router.push('/course/' + order.courseEk)">查看课程</button>
+          <template v-if="order.status === 1">
+            <button class="view-course-btn" @click="$router.push('/course/' + order.courseEk)">查看详情</button>
+            <button class="pay-btn" @click="$router.push('/purchase?ek=' + order.courseEk)">立即支付</button>
+          </template>
+          <template v-else>
+            <button class="view-course-btn" @click="$router.push('/course/' + order.courseEk)">查看课程</button>
+          </template>
         </div>
       </div>
     </main>
@@ -45,6 +56,7 @@ import { ref, onMounted } from 'vue'
 import { orderApi } from '@/api'
 
 const orders = ref<any[]>([])
+const imageBaseUrl = 'http://localhost:8080'
 
 onMounted(async () => {
   try {
@@ -52,6 +64,19 @@ onMounted(async () => {
     orders.value = res.data || []
   } catch (e) {}
 })
+
+function statusClass(status: number) {
+  if (status === 1) return 'pending'
+  if (status === 2) return 'completed'
+  return 'cancelled'
+}
+
+function statusText(order: any) {
+  if (order.statusStr) return order.statusStr
+  if (order.status === 1) return '待支付'
+  if (order.status === 2) return '已完成'
+  return '已取消'
+}
 </script>
 
 <style scoped>
@@ -90,41 +115,14 @@ onMounted(async () => {
   text-align: center;
 }
 
-.order-tabs {
-  display: flex;
-  background-color: #fff;
-  padding: 0 16px;
-}
-
-.tab-item {
-  flex: 1;
-  text-align: center;
-  padding: 14px 0;
-  font-size: 15px;
-  color: #666;
-  cursor: pointer;
-  position: relative;
-}
-
-.tab-item.active {
-  color: #3b82f6;
-  font-weight: 600;
-}
-
-.tab-item.active::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 30px;
-  height: 3px;
-  background-color: #3b82f6;
-  border-radius: 2px;
-}
-
 .orders-content {
   padding: 12px 16px;
+}
+
+.empty {
+  text-align: center;
+  color: #999;
+  padding: 40px 0;
 }
 
 .order-card {
@@ -139,6 +137,7 @@ onMounted(async () => {
   gap: 12px;
   margin-bottom: 16px;
   position: relative;
+  align-items: flex-start;
 }
 
 .course-image {
@@ -161,16 +160,6 @@ onMounted(async () => {
   line-height: 1.4;
 }
 
-.course-tag {
-  display: inline-block;
-  background-color: #e3f2fd;
-  color: #2196f3;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  margin-bottom: 6px;
-}
-
 .course-price {
   font-size: 16px;
   color: #333;
@@ -182,7 +171,7 @@ onMounted(async () => {
   top: 0;
   right: 0;
   padding: 4px 12px;
-  border-radius: 0;
+  border-radius: 4px;
   font-size: 13px;
   font-weight: 500;
 }
@@ -199,6 +188,12 @@ onMounted(async () => {
   border: 1px solid #ff9800;
 }
 
+.order-status-badge.cancelled {
+  background-color: #f5f5f5;
+  color: #999;
+  border: 1px solid #ccc;
+}
+
 .order-details {
   border-top: 1px solid #f0f0f0;
   padding-top: 12px;
@@ -212,19 +207,8 @@ onMounted(async () => {
   font-size: 13px;
 }
 
-.detail-row .label {
-  color: #999;
-}
-
-.detail-row .value {
-  color: #333;
-}
-
-.detail-row .value.price {
-  color: #3b82f6;
-  font-weight: 600;
-  font-size: 14px;
-}
+.detail-row .label { color: #999; }
+.detail-row .value { color: #333; }
 
 .card-footer {
   display: flex;
@@ -242,19 +226,7 @@ onMounted(async () => {
   cursor: pointer;
 }
 
-.detail-btn {
-  flex: 1;
-  padding: 8px 24px;
-  background-color: #fff;
-  color: #3b82f6;
-  border: 1px solid #3b82f6;
-  border-radius: 10px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
 .pay-btn {
-  flex: 1;
   padding: 8px 32px;
   background-color: #3b82f6;
   color: #fff;
