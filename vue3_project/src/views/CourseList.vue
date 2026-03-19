@@ -88,9 +88,12 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { courseApi, courseAdminApi, orderApi } from '@/api'
 
-const activeTab = ref('all')
+const route = useRoute()
+const router = useRouter()
+const activeTab = ref((route.query.tab as string) || 'all')
 const activeFilter = ref('all')
 const loading = ref(false)
 
@@ -162,6 +165,7 @@ const fetchCourseList = async () => {
 
 // 监听筛选条件变化
 watch([activeTab, activeFilter], () => {
+  router.replace({ query: { tab: activeTab.value } })
   fetchCourseList()
 })
 
