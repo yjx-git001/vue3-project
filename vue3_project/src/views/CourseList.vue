@@ -143,13 +143,14 @@ const fetchCourseList = async () => {
       purchased: false
     }))
 
-    // 登录状态下查询已购课程
+    // 登录状态下查询每个课程的购买状态
     const token = localStorage.getItem('token')
     if (token) {
       try {
-        const orderRes: any = await orderApi.getMyOrders()
-        const purchasedEks = new Set((orderRes.data || []).map((o: any) => o.courseEk))
-        courseList.value = courseList.value.map(c => ({ ...c, purchased: purchasedEks.has(c.id) }))
+        const purchaseChecks = await Promise.all(
+          courseList.value.map(c => orderApi.hasPurchased(c.id).catch(() => ({ data: { purchased: false } })))
+        )
+        courseList.value = courseList.value.map((c, i) => ({ ...c, purchased: purchaseChecks[i]?.data?.purchased || false }))
       } catch (e) {}
     }
   } catch (error) {

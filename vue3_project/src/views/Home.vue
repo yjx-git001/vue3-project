@@ -194,10 +194,14 @@ const fetchCourses = async () => {
     // 检查购买状态
     if (localStorage.getItem('token')) {
       try {
-        const orderRes: any = await orderApi.getMyOrders()
-        const purchasedEks = new Set((orderRes.data || []).map((o: any) => o.courseEk))
-        courseSystems.value = courseSystems.value.map(c => ({ ...c, isPurchased: purchasedEks.has(c.id) }))
-        hotCourses.value = hotCourses.value.map(c => ({ ...c, isPurchased: purchasedEks.has(c.id) }))
+        const systemChecks = await Promise.all(
+          courseSystems.value.map(c => orderApi.hasPurchased(c.id).catch(() => ({ data: { purchased: false } })))
+        )
+        const hotChecks = await Promise.all(
+          hotCourses.value.map(c => orderApi.hasPurchased(c.id).catch(() => ({ data: { purchased: false } })))
+        )
+        courseSystems.value = courseSystems.value.map((c, i) => ({ ...c, isPurchased: systemChecks[i]?.data?.purchased || false }))
+        hotCourses.value = hotCourses.value.map((c, i) => ({ ...c, isPurchased: hotChecks[i]?.data?.purchased || false }))
       } catch (e) {}
     }
   } catch (error) {
@@ -217,8 +221,8 @@ const fetchFlashSale = async () => {
       let isPurchased = false
       if (ek && localStorage.getItem('token')) {
         try {
-          const detail: any = await courseApi.getCourseDetail(ek)
-          isPurchased = detail.data?.purchased || false
+          const purchaseRes: any = await orderApi.hasPurchased(ek)
+          isPurchased = purchaseRes.data?.purchased || false
         } catch {}
       }
       flashSale.value = {

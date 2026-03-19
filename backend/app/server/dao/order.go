@@ -40,7 +40,30 @@ func (d orderDao) CancelIfPending(db *gorm.DB, id uint) error {
 }
 
 func (d orderDao) ExistsByCourseAndUser(db *gorm.DB, userID uint, courseEk int64) (bool, error) {
+	// 检查是否直接购买了该课程
 	var count int64
 	err := db.Model(&models.Order{}).Where("user_id = ? AND course_ek = ? AND status = ?", userID, courseEk, models.OrderStatusPaid).Count(&count).Error
-	return count > 0, err
+	if err != nil {
+		return false, err
+	}
+	if count > 0 {
+		return true, nil
+	}
+
+	// 检查该课程是否属于某个体系课程
+	var course models.Course
+	if err := db.Select("parent_ek").Where("ek = ?", courseEk).First(&course).Error; err != nil {
+		return false, nil
+	}
+
+	// 如果有父课程，检查是否购买了父课程
+	if course.ParentEk > 0 {
+		err = db.Model(&models.Order{}).Where("user_id = ? AND course_ek = ? AND status = ?", userID, course.ParentEk, models.OrderStatusPaid).Count(&count).Error
+		if err != nil {
+			return false, err
+		}
+		return count > 0, nil
+	}
+
+	return false, nil
 }
