@@ -2,10 +2,10 @@ package services
 
 import (
 	"backend/app/models"
-	"backend/pkg/db"
-	"backend/pkg/jwt"
 	"backend/app/server/dao"
 	"backend/app/server/dto"
+	"backend/pkg/db"
+	"backend/pkg/jwt"
 	"errors"
 
 	"golang.org/x/crypto/bcrypt"
@@ -17,7 +17,6 @@ type userService struct{}
 var UserService = new(userService)
 
 func (s userService) Register(req *dto.RegisterReq) error {
-	// 检查手机号是否已存在
 	_, err := dao.UserDao.GetByPhone(db.Db, req.Phone)
 	if err == nil {
 		return errors.New("手机号已被注册")
@@ -26,15 +25,13 @@ func (s userService) Register(req *dto.RegisterReq) error {
 		return err
 	}
 
-	// 加密密码
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
 
-	// 创建用户
 	user := &models.User{
-		Name:     req.Username,
+		Nickname: req.Nickname,
 		Phone:    req.Phone,
 		Password: string(hashedPassword),
 	}
@@ -43,7 +40,6 @@ func (s userService) Register(req *dto.RegisterReq) error {
 }
 
 func (s userService) Login(req *dto.LoginReq) (*dto.LoginResp, error) {
-	// 查询用户
 	user, err := dao.UserDao.GetByPhone(db.Db, req.Phone)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -52,13 +48,11 @@ func (s userService) Login(req *dto.LoginReq) (*dto.LoginResp, error) {
 		return nil, err
 	}
 
-	// 验证密码
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
 	if err != nil {
 		return nil, errors.New("密码错误")
 	}
 
-	// 生成 token
 	token, err := jwt.GenerateToken(user.ID, user.Phone)
 	if err != nil {
 		return nil, err
@@ -66,12 +60,7 @@ func (s userService) Login(req *dto.LoginReq) (*dto.LoginResp, error) {
 
 	return &dto.LoginResp{
 		Token: token,
-		User: dto.UserInfoResp{
-			ID:     user.ID,
-			Name:   user.Name,
-			Phone:  user.Phone,
-			Avatar: user.Avatar,
-		},
+		User:  toUserInfoResp(user),
 	}, nil
 }
 
@@ -83,12 +72,7 @@ func (s userService) GetByID(id uint) (dto.UserInfoResp, error) {
 		}
 		return dto.UserInfoResp{}, err
 	}
-	return dto.UserInfoResp{
-		ID:     user.ID,
-		Name:   user.Name,
-		Phone:  user.Phone,
-		Avatar: user.Avatar,
-	}, nil
+	return toUserInfoResp(user), nil
 }
 
 func (s userService) GetByPhone(phone string) (dto.UserInfoResp, error) {
@@ -99,10 +83,33 @@ func (s userService) GetByPhone(phone string) (dto.UserInfoResp, error) {
 		}
 		return dto.UserInfoResp{}, err
 	}
+	return toUserInfoResp(user), nil
+}
+
+func (s userService) UpdateProfile(userID uint, req *dto.UpdateProfileReq) error {
+	return db.Db.Model(&models.User{}).Where("id = ?", userID).Updates(map[string]interface{}{
+		"nickname":     req.Nickname,
+		"name":         req.Name,
+		"phone":        req.Phone,
+		"city":         req.City,
+		"organization": req.Organization,
+		"company":      req.Company,
+		"language":     req.Language,
+		"avatar":       req.Avatar,
+	}).Error
+}
+
+func toUserInfoResp(user models.User) dto.UserInfoResp {
 	return dto.UserInfoResp{
-		ID:     user.ID,
-		Name:   user.Name,
-		Phone:  user.Phone,
-		Avatar: user.Avatar,
-	}, nil
+		ID:           user.ID,
+		Nickname:     user.Nickname,
+		Name:         user.Name,
+		Phone:        user.Phone,
+		Avatar:       user.Avatar,
+		City:         user.City,
+		Organization: user.Organization,
+		Company:      user.Company,
+		Language:     user.Language,
+		CreatedAt:    user.CreatedAt.Format("2006.01.02"),
+	}
 }

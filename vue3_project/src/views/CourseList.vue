@@ -41,7 +41,7 @@
       >
         <div class="course-image-wrapper">
           <img :src="course.image" :alt="course.title" class="course-image" />
-          <span v-if="course.tag" :class="['course-tag', course.tag === '热门课程' ? 'course-tag--hot' : 'course-tag--system']">{{ course.tag }}</span>
+          <span v-if="course.tag" class="course-tag course-tag--system">{{ course.tag }}</span>
         </div>
         <div class="course-info">
           <h3 class="course-title">{{ course.title }}</h3>
@@ -87,10 +87,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch, onMounted } from 'vue'
+import { courseApi, courseAdminApi, orderApi } from '@/api'
 
 const activeTab = ref('all')
 const activeFilter = ref('all')
+const loading = ref(false)
 
 const tabs = ref([
   { id: 'all', name: '全部课程' },
@@ -98,57 +100,93 @@ const tabs = ref([
   { id: 'system', name: '体系课程' }
 ])
 
-const filters = ref([
-  { id: 'all', name: '全部' },
-  { id: 'equipment', name: '港机设备' },
-  { id: 'safety', name: '安全风险' },
-  { id: 'production', name: '生产装卸' },
-  { id: 'maintenance', name: '维护保养' },
-  { id: 'other', name: '其他' }
+const filters = ref<Array<{ id: string; name: string; value?: number }>>([
+  { id: 'all', name: '全部' }
 ])
 
-const courseList = ref([
-  {
-    id: 1,
-    title: '港口特种设备检修课程课程课程',
-    description: '12课时 · 专业讲师授课',
-    price: 499,
-    originalPrice: 500,
-    image: '/images/course-banner.png',
-    tag: '体系课程',
-    purchased: false
-  },
-  {
-    id: 2,
-    title: '港口特种设备检修课程',
-    description: '15课时 · 实战经验分享',
-    price: 499,
-    originalPrice: 500,
-    image: '/images/course-banner.png',
-    tag: '热门课程',
-    purchased: true
-  },
-  {
-    id: 3,
-    title: '港口特种设备检修课程课程课程',
-    description: '10课时 · 操作技能培训',
-    price: 499,
-    originalPrice: 500,
-    image: '/images/course-banner.png',
-    tag: '体系课程',
-    purchased: false
-  },
-  {
-    id: 4,
-    title: '港口特种设备检修课程',
-    description: '18课时 · 维护技能提升',
-    price: 499,
-    originalPrice: 500,
-    image: '/images/course-banner.png',
-    tag: '热门课程',
-    purchased: false
+const courseList = ref<any[]>([])
+
+// 获取课程列表
+const fetchCourseList = async () => {
+  loading.value = true
+  try {
+    const params: any = {
+      pageIndex: 1,
+      pageSize: 20
+    }
+
+    // 课程类型筛选
+    if (activeTab.value === 'single') {
+      params.courseCategory = 1
+    } else if (activeTab.value === 'system') {
+      params.courseCategory = 2
+    }
+
+    // 标签分类筛选
+    if (activeFilter.value !== 'all') {
+      const filter = filters.value.find(f => f.id === activeFilter.value)
+      if (filter?.value) {
+        params.courseTagClass = filter.value
+      }
+    }
+
+    const res: any = await courseApi.getCourseList(params)
+    courseList.value = (res.data?.list || []).map((item: any) => ({
+      id: item.ek,
+      title: item.title,
+      price: (item.price / 100).toFixed(2),
+      originalPrice: (item.originalPrice / 100).toFixed(2),
+      image: `http://localhost:8080${item.image}`,
+      tag: item.courseCategoryStr,
+      courseCategory: item.courseCategory,
+      parentEk: item.parentEk,
+      purchased: false
+    }))
+
+    // 登录状态下查询已购课程
+    const token = localStorage.getItem('token')
+    if (token) {
+      try {
+        const orderRes: any = await orderApi.getMyOrders()
+        const purchasedEks = new Set((orderRes.data || []).map((o: any) => o.courseEk))
+        courseList.value = courseList.value.map(c => ({ ...c, purchased: purchasedEks.has(c.id) }))
+      } catch (e) {}
+    }
+  } catch (error) {
+    console.error('获取课程列表失败:', error)
+  } finally {
+    loading.value = false
   }
-])
+}
+
+// 监听筛选条件变化
+watch([activeTab, activeFilter], () => {
+  fetchCourseList()
+})
+
+// 获取标签筛选选项
+const fetchFilterOptions = async () => {
+  try {
+    const res: any = await courseAdminApi.getQueryRule()
+    const tagValues = res.data?.edit?.courseTagClass?.values || []
+    filters.value = [
+      { id: 'all', name: '全部' },
+      ...tagValues.map((tag: any) => ({
+        id: `tag_${tag.value}`,
+        name: tag.text,
+        value: tag.value
+      }))
+    ]
+  } catch (error) {
+    console.error('获取筛选选项失败:', error)
+  }
+}
+
+// 页面加载时获取数据
+onMounted(() => {
+  fetchFilterOptions()
+  fetchCourseList()
+})
 </script>
 
 <style scoped>
@@ -159,12 +197,14 @@ const courseList = ref([
 }
 
 .top-nav {
+  position: sticky;
+  top: 0;
+  z-index: 103;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 10px 15px;
   background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .logo-container {
@@ -185,10 +225,12 @@ const courseList = ref([
 
 
 .course-tabs {
+  position: sticky;
+  top: 60px;
+  z-index: 102;
   display: flex;
   background-color: #fff;
   padding: 12px 0;
-  border-bottom: 1px solid #eee;
 }
 
 .tab-item {
@@ -218,12 +260,15 @@ const courseList = ref([
 }
 
 .filter-section {
+  position: sticky;
+  top: 101px;
+  z-index: 101;
   display: flex;
   gap: 12px;
   padding: 12px 16px;
   background-color: #fff;
   overflow-x: auto;
-  margin-bottom: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .filter-btn {
@@ -257,6 +302,8 @@ const courseList = ref([
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  border: none;
+  box-shadow: none;
 }
 
 .course-image-wrapper {
@@ -301,7 +348,7 @@ const courseList = ref([
 }
 
 .course-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: #333;
   margin: 0;

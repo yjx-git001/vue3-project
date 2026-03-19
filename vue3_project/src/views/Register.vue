@@ -24,7 +24,7 @@
           <input
             type="text"
             placeholder="请输入用户名"
-            v-model="username"
+            v-model="nickname"
           />
         </div>
 
@@ -118,7 +118,7 @@ import { userApi } from '@/api'
 
 const router = useRouter()
 
-const username = ref('')
+const nickname = ref('')
 const phoneNumber = ref('')
 const password = ref('')
 const confirmPassword = ref('')
@@ -145,8 +145,8 @@ function showMessage(msg: string, type: 'error' | 'success' = 'error') {
 }
 
 function validateForm() {
-  if (!username.value.trim()) {
-    showMessage('请输入用户名', 'error')
+  if (!nickname.value.trim()) {
+    showMessage('请输入昵称', 'error')
     return false
   }
 
@@ -191,7 +191,7 @@ async function handleRegister() {
 
   try {
     const response: any = await userApi.register(
-      username.value,
+      nickname.value,
       phoneNumber.value,
       password.value
     )

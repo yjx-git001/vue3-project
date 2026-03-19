@@ -8,8 +8,8 @@
       <p class="course-card__title">{{ course.title }}</p>
       <div :class="['course-card__footer', `course-card__footer--${layout}`]">
         <div class="course-card__meta">
-          <span class="course-card__original-price">¥{{ course.originalPrice }}</span>
           <span class="course-card__price">¥{{ course.price }}</span>
+          <span class="course-card__original-price">¥{{ course.originalPrice }}</span>
         </div>
         <button
           v-if="course.isPurchased"
@@ -138,7 +138,7 @@ const handleClick = () => {
 }
 
 .course-card--horizontal .course-card__meta {
-  flex-direction: column;
+  flex-direction: column-reverse;
   align-items: flex-start;
 }
 

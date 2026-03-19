@@ -10,7 +10,7 @@
 
     <!-- 课程横幅 -->
     <div class="course-banner">
-      <img src="/images/course-detail-banner.png" alt="课程横幅" class="banner-image" />
+      <img :src="courseDetail.image ? imageBaseUrl + courseDetail.image : '/images/course-detail-banner.png'" alt="课程横幅" class="banner-image" />
       <div class="play-overlay">
         <div class="play-button">
           <svg viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" fill="white" /></svg>
@@ -20,8 +20,8 @@
 
     <!-- 课程信息 -->
     <div class="course-info-section">
-      <h2 class="course-title">港口特种设备检修课程</h2>
-      <span class="course-tag">体系课程</span>
+      <h2 class="course-title">{{ courseDetail.courseName || '课程名称' }}</h2>
+      <span class="course-tag">{{ courseDetail.courseCategory === 2 ? '体系课程' : '单门课程' }}</span>
     </div>
 
     <!-- 标签页 -->
@@ -158,12 +158,28 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { courseApi } from '@/api'
 
 const router = useRouter()
+const route = useRoute()
 const activeTab = ref('catalog')
 const showExamModal = ref(false)
+const courseDetail = ref<any>({})
+const imageBaseUrl = 'http://localhost:8080'
+
+onMounted(async () => {
+  const ek = Number(route.params.id)
+  if (ek) {
+    try {
+      const res: any = await courseApi.getCourseDetail(ek)
+      courseDetail.value = res.data
+    } catch (e) {
+      console.error('获取课程详情失败:', e)
+    }
+  }
+})
 
 const tabs = [
   { label: '目录', value: 'catalog' },

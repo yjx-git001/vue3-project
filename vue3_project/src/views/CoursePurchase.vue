@@ -11,10 +11,10 @@
     <main class="purchase-content">
       <!-- 课程信息 -->
       <section class="course-section">
-        <img src="/images/course-detail-banner.png" alt="Course" class="course-thumb" />
+        <img :src="courseDetail.image ? imageBaseUrl + courseDetail.image : '/images/course-detail-banner.png'" alt="Course" class="course-thumb" />
         <div class="course-details">
-          <h2 class="course-title">门机操作初级课程</h2>
-          <span class="course-tag">体系课程</span>
+          <h2 class="course-title">{{ courseDetail.courseName }}</h2>
+          <span class="course-tag">{{ courseDetail.courseCategory === 2 ? '体系课程' : '单门课程' }}</span>
         </div>
       </section>
 
@@ -22,14 +22,10 @@
       <section class="price-section">
         <div class="price-row">
           <span class="price-label">课程价格</span>
-          <span class="price-value">¥350.00</span>
-        </div>
-        <div class="price-row">
-          <span class="price-label">课程优惠</span>
-          <span class="price-value discount">-¥221.00</span>
+          <span class="price-value">¥{{ (price / 100).toFixed(2) }}</span>
         </div>
         <div class="price-row total">
-          <span class="price-value total-price">合计¥129.00</span>
+          <span class="price-value total-price">合计¥{{ (price / 100).toFixed(2) }}</span>
         </div>
       </section>
 
@@ -68,19 +64,53 @@
 
     <footer class="purchase-footer">
       <div class="footer-info">
-        <div class="total-amount">¥129.00</div>
-        <div class="saved-amount">共省¥221.00</div>
+        <div class="total-amount">¥{{ (price / 100).toFixed(2) }}</div>
       </div>
-      <button class="submit-btn">提交订单</button>
+      <div v-if="payError" style="color:#ef4444;font-size:12px;margin-right:8px">{{ payError }}</div>
+      <button class="submit-btn" @click="handleSubmit" :disabled="paying">{{ paying ? '处理中...' : '提交订单' }}</button>
     </footer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { courseApi, orderApi } from '@/api'
 
+const route = useRoute()
+const router = useRouter()
 const paymentMethod = ref('wechat')
 const cardNumber = ref('')
+const courseDetail = ref<any>({})
+const imageBaseUrl = 'http://localhost:8080'
+const paying = ref(false)
+const payError = ref('')
+
+const price = computed(() => courseDetail.value.price || 0)
+
+onMounted(async () => {
+  const ek = Number(route.query.ek)
+  if (!ek) return
+  try {
+    const res: any = await courseApi.getCourseDetail(ek)
+    courseDetail.value = res.data
+  } catch (e) {}
+})
+
+const handleSubmit = async () => {
+  paying.value = true
+  payError.value = ''
+  try {
+    const ek = Number(route.query.ek)
+    const payType = paymentMethod.value === 'wechat' ? 1 : 2
+    await orderApi.create(ek, payType, cardNumber.value || undefined)
+    router.push('/course/' + ek)
+  } catch (e: any) {
+    payError.value = e.response?.data?.msg || '支付失败'
+  } finally {
+    paying.value = false
+  }
+}
 </script>
 
 <style scoped>

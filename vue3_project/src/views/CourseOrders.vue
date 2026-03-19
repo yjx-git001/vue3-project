@@ -8,67 +8,32 @@
       <span class="nav-title">课程订单</span>
     </header>
 
-    <!-- 订单状态标签 -->
-    <div class="order-tabs">
-      <div
-        v-for="tab in orderTabs"
-        :key="tab.id"
-        :class="['tab-item', { active: activeTab === tab.id }]"
-        @click="activeTab = tab.id"
-      >
-        {{ tab.name }}
-      </div>
-    </div>
-
     <main class="orders-content">
-      <div
-        v-for="order in ordersList"
-        :key="order.id"
-        :class="['order-card', order.status]"
-      >
+      <div v-if="!orders.length" class="empty">暂无订单</div>
+      <div v-for="order in orders" :key="order.id" class="order-card">
         <div class="card-header">
-          <img :src="order.image" :alt="order.courseName" class="course-image" />
           <div class="course-info">
             <h3 class="course-name">{{ order.courseName }}</h3>
-            <div class="course-tag">{{ order.courseType }}</div>
-            <div class="course-price">¥{{ order.price }}</div>
+            <div class="course-price">¥{{ (order.price / 100).toFixed(2) }}</div>
           </div>
-          <div class="order-status-badge" :class="order.status">
-            {{ getStatusText(order.status) }}
-          </div>
+          <div class="order-status-badge completed">已完成</div>
         </div>
-
-        <div v-if="order.status === 'completed'" class="order-details">
-          <div class="detail-row">
-            <span class="label">实际支付：</span>
-            <span class="value price">¥{{ order.actualPayment }}</span>
-          </div>
+        <div class="order-details">
           <div class="detail-row">
             <span class="label">支付方式：</span>
-            <span class="value">{{ order.paymentMethod }}</span>
+            <span class="value">{{ order.payTypeStr }}</span>
           </div>
           <div class="detail-row">
             <span class="label">订单编号：</span>
-            <span class="value">{{ order.orderNumber }}</span>
+            <span class="value">{{ order.orderNo }}</span>
           </div>
           <div class="detail-row">
             <span class="label">购买时间：</span>
-            <span class="value">{{ order.purchaseTime }}</span>
+            <span class="value">{{ order.createdAt }}</span>
           </div>
         </div>
-
         <div class="card-footer">
-          <button
-            v-if="order.status === 'completed'"
-            class="view-course-btn"
-            @click="$router.push('/course_content/' + order.courseId)"
-          >
-            查看课程
-          </button>
-          <template v-else-if="order.status === 'pending'">
-            <button class="detail-btn" @click="$router.push('/course/' + order.courseId)">查看详情</button>
-            <button class="pay-btn" @click="$router.push('/purchase')">立即支付</button>
-          </template>
+          <button class="view-course-btn" @click="$router.push('/course/' + order.courseEk)">查看课程</button>
         </div>
       </div>
     </main>
@@ -76,54 +41,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { orderApi } from '@/api'
 
-const activeTab = ref('all')
+const orders = ref<any[]>([])
 
-const orderTabs = ref([
-  { id: 'all', name: '全部' },
-  { id: 'pending', name: '待支付' },
-  { id: 'completed', name: '已完成' },
-  { id: 'cancelled', name: '已取消' }
-])
-
-const ordersList = ref([
-  {
-    id: 1,
-    courseId: 1,
-    courseName: '港口特种设备检修课程',
-    courseType: '体系课程',
-    price: '350.00',
-    actualPayment: '129.00',
-    paymentMethod: '微信支付',
-    orderNumber: '39429309234',
-    purchaseTime: '2025.12.25  10:00',
-    status: 'completed',
-    image: '/images/course-detail-banner.png'
-  },
-  {
-    id: 2,
-    courseId: 2,
-    courseName: '港口特种设备检修课程',
-    courseType: '体系课程',
-    price: '350.00',
-    actualPayment: '350.00',
-    paymentMethod: '',
-    orderNumber: '39429309235',
-    purchaseTime: '2025.12.26  14:30',
-    status: 'pending',
-    image: '/images/course-detail-banner.png'
-  }
-])
-
-const getStatusText = (status: string) => {
-  const statusMap: Record<string, string> = {
-    completed: '已完成',
-    pending: '待支付',
-    cancelled: '已取消'
-  }
-  return statusMap[status] || ''
-}
+onMounted(async () => {
+  try {
+    const res: any = await orderApi.getMyOrders()
+    orders.value = res.data || []
+  } catch (e) {}
+})
 </script>
 
 <style scoped>

@@ -13,22 +13,23 @@
       <section class="user-card">
         <div class="user-info">
           <div class="avatar">
-            <svg viewBox="0 0 24 24"><path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" fill="white" /></svg>
+            <img v-if="userInfo.avatar" :src="imageBaseUrl + userInfo.avatar" class="avatar-img" />
+            <svg v-else viewBox="0 0 24 24"><path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" fill="white" /></svg>
           </div>
           <div class="user-details">
-            <h2 class="username">爱学习的老铁</h2>
-            <p class="join-date">入学日期：2025.12.30</p>
+            <h2 class="username">{{ userInfo.nickname || userInfo.phone }}</h2>
+            <p class="join-date">入学日期：{{ userInfo.createdAt }}</p>
           </div>
-          <div class="user-id">ID: 26372</div>
+          <div class="user-id">ID: {{ userInfo.id }}</div>
         </div>
         <div class="user-stats">
           <div class="stat-item">
-            <div class="stat-value">0</div>
+            <div class="stat-value">{{ formatHours(todayDuration) }}</div>
             <div class="stat-label">今日学时</div>
           </div>
           <div class="stat-divider"></div>
           <div class="stat-item">
-            <div class="stat-value">68 小时</div>
+            <div class="stat-value">{{ formatHours(totalDuration) }}</div>
             <div class="stat-label">累计学时</div>
           </div>
           <div class="stat-divider"></div>
@@ -142,7 +143,31 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { studyApi } from '@/api'
+
+const userInfo = ref({ id: '', nickname: '', phone: '', avatar: '', createdAt: '' })
+const imageBaseUrl = 'http://localhost:8080'
+const todayDuration = ref(0)
+const totalDuration = ref(0)
+
+function formatHours(seconds: number) {
+  const h = seconds / 3600
+  return `${parseFloat(h.toFixed(1))} 小时`
+}
+
+onMounted(async () => {
+  const stored = localStorage.getItem('userInfo')
+  if (stored) userInfo.value = JSON.parse(stored)
+  const token = localStorage.getItem('token')
+  if (token) {
+    try {
+      const res: any = await studyApi.getStats()
+      todayDuration.value = res.data?.todayDuration || 0
+      totalDuration.value = res.data?.totalDuration || 0
+    } catch (e) {}
+  }
+})
 
 const recommendCourses = ref([
   {
@@ -237,6 +262,13 @@ const recommendCourses = ref([
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .avatar svg {

@@ -1,12 +1,10 @@
 package httpapis
 
 import (
-	"backend/pkg/api"
-	"backend/pkg/jwt"
-	"backend/pkg/logger"
 	services "backend/app/server"
 	"backend/app/server/dto"
-	"strings"
+	"backend/pkg/api"
+	"backend/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -55,27 +53,8 @@ func (a UserApi) Login(c *gin.Context) {
 func (a UserApi) GetUserInfo(c *gin.Context) {
 	a.MakeContext(c)
 
-	// 从请求头获取 token
-	authHeader := c.GetHeader("Authorization")
-	if authHeader == "" {
-		a.Error(401, nil, "未登录")
-		return
-	}
-	parts := strings.SplitN(authHeader, " ", 2)
-	if len(parts) != 2 || parts[0] != "Bearer" {
-		a.Error(401, nil, "token 格式错误")
-		return
-	}
-
-	claims, err := jwt.ParseToken(parts[1])
-	if err != nil {
-		logger.Sugar.Errorf("parse token error: %s", err.Error())
-		a.ErrorApi(err)
-		return
-	}
-
-	// 根据用户 ID 查询用户信息
-	user, err := services.UserService.GetByID(claims.UserID)
+	userID := c.GetUint("userID")
+	user, err := services.UserService.GetByID(userID)
 	if err != nil {
 		logger.Sugar.Errorf("get user info error: %s", err.Error())
 		a.ErrorApi(err)
@@ -83,4 +62,22 @@ func (a UserApi) GetUserInfo(c *gin.Context) {
 	}
 
 	a.OK(user, "ok")
+}
+
+func (a UserApi) UpdateProfile(c *gin.Context) {
+	var req dto.UpdateProfileReq
+	if err := a.MakeContext(c).Bind(&req, binding.JSON).Errors; err != nil {
+		logger.Sugar.Errorf("binding req data error: %s", err)
+		a.ErrorApi(err)
+		return
+	}
+
+	userID := c.GetUint("userID")
+	if err := services.UserService.UpdateProfile(userID, &req); err != nil {
+		logger.Sugar.Errorf("update profile error: %s", err.Error())
+		a.ErrorApi(err)
+		return
+	}
+
+	a.OK(nil, "更新成功")
 }

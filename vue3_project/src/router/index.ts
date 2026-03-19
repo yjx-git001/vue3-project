@@ -20,6 +20,7 @@ import CouponList from '@/views/CouponList.vue'
 import AccountSettings from '@/views/AccountSettings.vue'
 import ChatSupport from '@/views/ChatSupport.vue'
 import CourseContentDetail from '@/views/CourseContentDetail.vue'
+import CourseAdmin from '@/views/CourseAdmin.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -149,6 +150,12 @@ const router = createRouter({
       name: 'chatSupport',
       component: ChatSupport
       // 在线客服页 - DeepSeek AI 对话
+    },
+    {
+      path: '/admin/courses',
+      name: 'courseAdmin',
+      component: CourseAdmin
+      // 课程管理页 - 创建体系课程和单门课程
     }
   ]
 })

@@ -13,5 +13,5 @@ func init() {
 func registerUploadRouter(apiGroup *gin.RouterGroup) {
 	uploadApi := httpapis.UploadApi{}
 
-	apiGroup.POST("/api/upload", uploadApi.Upload)
+	apiGroup.POST("/api/upload", uploadApi.Upload) //上传文件
 }

@@ -2,37 +2,92 @@ import request from './request'
 
 // 用户相关接口
 export const userApi = {
-  register(username: string, phone: string, password: string) {
-    return request.post('/user/register', { username, phone, password })
+  register(nickname: string, phone: string, password: string) {
+    return request.post('/user/register', { nickname, phone, password })
   },
   login(phone: string, password: string) {
     return request.post('/user/login', { phone, password })
   },
   getUserInfo() {
     return request.get('/user/info')
+  },
+  updateProfile(data: { nickname?: string; name?: string; city?: string; organization?: string; company?: string; language?: string; avatar?: string }) {
+    return request.put('/user/profile', data)
   }
 }
 
 // 课程相关接口
 export const courseApi = {
-  getCourseList(params?: { tab?: string; filter?: string }) {
-    return request.get('/courses', { params })
+  getCourseList(params?: {
+    pageIndex?: number
+    pageSize?: number
+    courseCategory?: number
+    courseTagClass?: number
+  }) {
+    return request.get('/courses/list', { params })
   },
-  getCourseDetail(id: number) {
-    return request.get(`/courses/${id}`)
+  getCourseDetail(ek: number, courseCategory?: number) {
+    return request.get('/courses/detail', { params: { ek, courseCategory } })
   },
   getUserCourses() {
     return request.get('/user/courses')
   }
 }
 
+// 课程管理接口（后台）
+export const courseAdminApi = {
+  // 获取体系课程选项列表
+  getSystemOptions() {
+    return request.get('/courses/system_options')
+  },
+  // 获取课程规则选项（标签分类等）
+  getQueryRule() {
+    return request.get('/courses/query_rule')
+  },
+  // 创建体系课程
+  createSystemCourse(data: {
+    courseName: string
+    courseTime: number
+    price: number
+    originalPrice: number
+    image: string
+    courseDetail: string
+    courseIntroduction: string
+  }) {
+    return request.post('/courses/system', data)
+  },
+  // 创建单门课程
+  createSingleCourse(data: {
+    courseName: string
+    parentEk: number
+    courseTime: number
+    price: number
+    originalPrice: number
+    image: string
+    courseDetail: string
+    courseTagClass: number[]
+    theoreticalQuestions: {
+      singleQuestion: number
+      multipleQuestion: number
+      judgeQuestion: number
+    }
+    videoQuestions: number
+    attachment: number
+  }) {
+    return request.post('/courses/single', data)
+  }
+}
+
 // 订单相关接口
 export const orderApi = {
-  createOrder(courseId: number, couponId?: number) {
-    return request.post('/orders', { courseId, couponId })
+  create(courseEk: number, payType: number, cardCode?: string) {
+    return request.post('/order/create', { courseEk, payType, cardCode })
   },
-  getOrders() {
-    return request.get('/orders')
+  getMyOrders() {
+    return request.get('/order/my')
+  },
+  hasPurchased(courseEk: number) {
+    return request.get('/order/purchased', { params: { courseEk } })
   }
 }
 
@@ -73,5 +128,68 @@ export const certificateApi = {
 export const couponApi = {
   getCoupons() {
     return request.get('/coupons')
+  }
+}
+
+// 上传接口
+export const uploadApi = {
+  uploadFile(file: File) {
+    const formData = new FormData()
+    formData.append('file', file)
+    return request.post('/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+  }
+}
+
+// 限时秒杀管理接口
+export const flashSaleAdminApi = {
+  getList() {
+    return request.get('/flash_sales/list')
+  },
+  getActive() {
+    return request.get('/flash_sales/active')
+  },
+  create(data: { courseEk: number; price: number; startTime: string; endTime: string }) {
+    return request.post('/flash_sales/create', data)
+  },
+  setEnable(id: number, enable: boolean) {
+    return request.put(`/flash_sales/enable?id=${id}`, { enable })
+  },
+  delete(id: number) {
+    return request.delete(`/flash_sales/delete?id=${id}`)
+  }
+}
+export const bannerAdminApi = {
+  getList() {
+    return request.get('/banners/list')
+  },
+  create(data: { image: string; sort: number }) {
+    return request.post('/banners/create', data)
+  },
+  delete(id: number) {
+    return request.delete(`/banners/delete?id=${id}`)
+  }
+}
+
+// 学时接口
+export const studyApi = {
+  addRecord(duration: number) {
+    return request.post('/study/record', { duration })
+  },
+  getStats() {
+    return request.get('/study/stats')
+  }
+}
+
+// 卡密接口
+export const cardKeyApi = {
+  generate(count: number) {
+    return request.post('/admin/cardkey/generate', { count })
+  },
+  getList() {
+    return request.get('/admin/cardkey/list')
   }
 }

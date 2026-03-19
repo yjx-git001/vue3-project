@@ -1,10 +1,10 @@
 package httpapis
 
 import (
-	"backend/pkg/api"
-	"backend/pkg/logger"
 	services "backend/app/server"
 	"backend/app/server/dto"
+	"backend/pkg/api"
+	"backend/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -22,7 +22,8 @@ func (a CourseApi) GetPage(c *gin.Context) {
 		return
 	}
 
-	result, err := services.CourseService.GetPage(&req)
+	userID := c.GetUint("userID")
+	result, err := services.CourseService.GetPage(&req, userID)
 	if err != nil {
 		logger.Sugar.Errorf("get page error: %s", err.Error())
 		a.ErrorApi(err)
@@ -40,7 +41,8 @@ func (a CourseApi) GetDetail(c *gin.Context) {
 		return
 	}
 
-	result, err := services.CourseService.GetDetail(&req)
+	userID := c.GetUint("userID")
+	result, err := services.CourseService.GetDetail(&req, userID)
 	if err != nil {
 		logger.Sugar.Errorf("get detail error: %s", err.Error())
 		a.ErrorApi(err)
@@ -84,4 +86,30 @@ func (a CourseApi) CreateSingle(c *gin.Context) {
 	}
 
 	a.OK(nil, "创建成功")
+}
+
+func (a CourseApi) GetSystemOptions(c *gin.Context) {
+	a.MakeContext(c)
+
+	result, err := services.CourseService.GetSystemOptions()
+	if err != nil {
+		logger.Sugar.Errorf("get system options error: %s", err.Error())
+		a.ErrorApi(err)
+		return
+	}
+
+	a.OK(result, "ok")
+}
+
+func (a CourseApi) QueryRule(c *gin.Context) {
+	a.MakeContext(c)
+
+	result, err := services.CourseService.QueryRule()
+	if err != nil {
+		logger.Sugar.Errorf("query rule error: %s", err.Error())
+		a.ErrorApi(err)
+		return
+	}
+
+	a.OK(result, "ok")
 }

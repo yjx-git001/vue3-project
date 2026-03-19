@@ -14,17 +14,12 @@
         <div class="carousel-container" @touchstart="handleTouchStart" @touchmove="handleTouchMove" @touchend="handleTouchEnd">
           <div class="carousel-track" :style="{ transform: `translateX(-${currentIndex * 100}%)` }">
             <div v-for="(banner, index) in banners" :key="index" class="carousel-item">
-              <img :src="banner.image" alt="Banner" class="carousel-image" />
-              <div class="video-overlay">
-                <div class="play-button"></div>
-              </div>
-              <span class="video-tag">{{ banner.tag }}</span>
-              <span class="video-title">{{ banner.title }}</span>
+              <img :src="imageBaseUrl + banner.image" alt="Banner" class="carousel-image" />
             </div>
           </div>
         </div>
         <div class="carousel-dots">
-          <span v-for="(banner, index) in banners" :key="index" :class="['dot', { active: currentIndex === index }]" @click="currentIndex = index"></span>
+          <span v-for="(_, index) in banners" :key="index" :class="['dot', { active: currentIndex === index }]" @click="currentIndex = index"></span>
         </div>
       </section>
 
@@ -62,7 +57,16 @@
             <p class="promo-title">{{ flashSale.title }}</p>
             <div class="promo-meta">
               <span class="promo-price">¥{{ flashSale.price }}</span>
-              <button class="learn-button" @click="$router.push('/course_content/' + flashSale.id)">立即学习</button>
+              <button
+                v-if="flashSale.isPurchased"
+                class="learn-button learn-button--study"
+                @click="$router.push('/course_content/' + flashSale.id)"
+              >立即学习</button>
+              <button
+                v-else
+                class="learn-button"
+                @click="$router.push('/course/' + flashSale.id)"
+              >立即购买</button>
             </div>
           </div>
         </div>
@@ -109,6 +113,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import CourseCard from '@/components/CourseCard.vue'
 import CourseListContainer from '@/components/CourseListContainer.vue'
 import { useRouter } from 'vue-router'
+import { bannerAdminApi, courseApi, flashSaleAdminApi, orderApi } from '@/api'
 
 const router = useRouter()
 
@@ -121,11 +126,17 @@ const handleCourseClick = (course: any) => {
 }
 
 // 轮播数据
-const banners = ref([
-  { image: '/images/course-banner.png', tag: '大师课', title: '智慧港口运营与自动化管理' },
-  { image: '/images/course-banner.png', tag: '热门课', title: '港口特种设备检修课程' },
-  { image: '/images/course-banner.png', tag: '体系课', title: '港口安全知识培训' }
-])
+const banners = ref<any[]>([])
+const imageBaseUrl = 'http://localhost:8080'
+
+const fetchBanners = async () => {
+  try {
+    const res: any = await bannerAdminApi.getList()
+    banners.value = res.data || []
+  } catch (error) {
+    console.error('获取banner失败:', error)
+  }
+}
 
 const currentIndex = ref(0)
 let touchStartX = 0
@@ -157,69 +168,94 @@ const startAutoPlay = () => {
   }, 3000)
 }
 
-// 模拟数据
-const courseSystems = ref([
-  {
-    id: 1,
-    title: '港口特种设备检修课程',
-    tag: '12课时',
-    price: 499,
-    originalPrice: 500,
-    image: '/images/course-banner.png',
-    isPurchased: false
-  },
-  {
-    id: 2,
-    title: '港口特种设备检修课程',
-    tag: '12课时',
-    price: 499,
-    originalPrice: 500,
-    image: '/images/course-banner.png',
-    isPurchased: true
-  }
-])
+// 课程数据
+const courseSystems = ref<any[]>([])
+const hotCourses = ref<any[]>([])
 
-const flashSale = ref({
-  id: 1,
-  title: '港口安全知识-倒运司机',
-  price: 0,
-  image: '/images/promo-thumb.png'
+const mapCourse = (item: any) => ({
+  id: item.ek,
+  title: item.title,
+  tag: item.courseTime ? `${item.courseTime}课时` : '',
+  price: (item.price / 100).toFixed(2),
+  originalPrice: (item.originalPrice / 100).toFixed(2),
+  image: imageBaseUrl + item.image,
+  isPurchased: item.purchased || false
 })
 
-const hotCourses = ref([
-  { id: 1, title: '港口特种设备检修课程', price: 499, originalPrice: 500, image: '/images/course-banner.png' },
-  { id: 2, title: '港口特种设备检修课程', price: 499, originalPrice: 500, image: '/images/course-banner.png' },
-  { id: 3, title: '港口特种设备检修课程', price: 499, originalPrice: 500, image: '/images/course-banner.png' },
-  { id: 4, title: '港口特种设备检修课程', price: 499, originalPrice: 500, image: '/images/course-banner.png' }
-])
+const fetchCourses = async () => {
+  try {
+    const [systemRes, hotRes]: any[] = await Promise.all([
+      courseApi.getCourseList({ pageIndex: 1, pageSize: 10 }),
+      courseApi.getCourseList({ pageIndex: 1, pageSize: 4 })
+    ])
+    courseSystems.value = (systemRes.data?.list || []).map(mapCourse)
+    hotCourses.value = (hotRes.data?.list || []).map(mapCourse)
 
+    // 检查购买状态
+    if (localStorage.getItem('token')) {
+      try {
+        const orderRes: any = await orderApi.getMyOrders()
+        const purchasedEks = new Set((orderRes.data || []).map((o: any) => o.courseEk))
+        courseSystems.value = courseSystems.value.map(c => ({ ...c, isPurchased: purchasedEks.has(c.id) }))
+        hotCourses.value = hotCourses.value.map(c => ({ ...c, isPurchased: purchasedEks.has(c.id) }))
+      } catch (e) {}
+    }
+  } catch (error) {
+    console.error('获取课程失败:', error)
+  }
+}
 
-// 倒计时逻辑
-const countdown = ref({ hours: '02', minutes: '14', seconds: '55' })
+const flashSale = ref<any>({ id: 0, title: '', price: 0, image: '', isPurchased: false })
+const countdown = ref({ hours: '00', minutes: '00', seconds: '00' })
 let timer: number
 
-function startCountdown() {
-  let totalSeconds = 2 * 3600 + 14 * 60 + 55
-  timer = window.setInterval(() => {
-    if (totalSeconds > 0) {
-      totalSeconds--
-      const hours = Math.floor(totalSeconds / 3600)
-      const minutes = Math.floor((totalSeconds % 3600) / 60)
-      const seconds = totalSeconds % 60
-      countdown.value = {
-        hours: String(hours).padStart(2, '0'),
-        minutes: String(minutes).padStart(2, '0'),
-        seconds: String(seconds).padStart(2, '0')
+const fetchFlashSale = async () => {
+  try {
+    const res: any = await flashSaleAdminApi.getActive()
+    if (res.data) {
+      const ek = res.data.course?.ek || 0
+      let isPurchased = false
+      if (ek && localStorage.getItem('token')) {
+        try {
+          const detail: any = await courseApi.getCourseDetail(ek)
+          isPurchased = detail.data?.purchased || false
+        } catch {}
       }
-    } else {
-      clearInterval(timer)
+      flashSale.value = {
+        id: ek,
+        title: res.data.course?.courseName || '',
+        price: (res.data.price / 100).toFixed(2),
+        image: res.data.course?.image ? imageBaseUrl + res.data.course.image : '',
+        isPurchased
+      }
+      if (res.data.endTime) {
+        startCountdown(new Date(res.data.endTime).getTime())
+      }
     }
+  } catch {}
+}
+
+function startCountdown(endTimestamp: number) {
+  clearInterval(timer)
+  timer = window.setInterval(() => {
+    const diff = Math.max(0, Math.floor((endTimestamp - Date.now()) / 1000))
+    const hours = Math.floor(diff / 3600)
+    const minutes = Math.floor((diff % 3600) / 60)
+    const seconds = diff % 60
+    countdown.value = {
+      hours: String(hours).padStart(2, '0'),
+      minutes: String(minutes).padStart(2, '0'),
+      seconds: String(seconds).padStart(2, '0')
+    }
+    if (diff === 0) clearInterval(timer)
   }, 1000)
 }
 
 onMounted(() => {
-  startCountdown()
   startAutoPlay()
+  fetchBanners()
+  fetchCourses()
+  fetchFlashSale()
 })
 
 onUnmounted(() => {
@@ -540,11 +576,17 @@ onUnmounted(() => {
 .learn-button {
   width: 100%;
   padding: 8px;
+  background-color: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.learn-button--study {
   background-color: #fff;
   color: #3b82f6;
   border: 1px solid #3b82f6;
-  border-radius: 10px;
-  cursor: pointer;
 }
 
 .course-grid {
