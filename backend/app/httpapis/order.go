@@ -65,7 +65,7 @@ func (a OrderApi) HasPurchased(c *gin.Context) {
 		return
 	}
 
-	a.OK(gin.H{"purchased": ok}, "ok")
+	a.OK(ok, "ok")
 }
 
 func (a OrderApi) CreatePending(c *gin.Context) {

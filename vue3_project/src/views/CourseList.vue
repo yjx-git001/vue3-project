@@ -151,9 +151,9 @@ const fetchCourseList = async () => {
     if (token) {
       try {
         const purchaseChecks = await Promise.all(
-          courseList.value.map(c => orderApi.hasPurchased(c.id).catch(() => ({ data: { purchased: false } })))
+          courseList.value.map(c => orderApi.hasPurchased(c.id).catch(() => ({ data: false })))
         )
-        courseList.value = courseList.value.map((c, i) => ({ ...c, purchased: purchaseChecks[i]?.data?.purchased || false }))
+        courseList.value = courseList.value.map((c, i) => ({ ...c, purchased: purchaseChecks[i]?.data || false }))
       } catch (e) {}
     }
   } catch (error) {

@@ -186,22 +186,18 @@ const fetchCourses = async () => {
   try {
     const [systemRes, hotRes]: any[] = await Promise.all([
       courseApi.getCourseList({ pageIndex: 1, pageSize: 10 }),
-      courseApi.getCourseList({ pageIndex: 1, pageSize: 4 })
+      courseApi.getHotCourses()
     ])
     courseSystems.value = (systemRes.data?.list || []).map(mapCourse)
-    hotCourses.value = (hotRes.data?.list || []).map(mapCourse)
+    hotCourses.value = (hotRes.data || []).map(mapCourse)
 
     // 检查购买状态
     if (localStorage.getItem('token')) {
       try {
         const systemChecks = await Promise.all(
-          courseSystems.value.map(c => orderApi.hasPurchased(c.id).catch(() => ({ data: { purchased: false } })))
+          courseSystems.value.map(c => orderApi.hasPurchased(c.id).catch(() => ({ data: false })))
         )
-        const hotChecks = await Promise.all(
-          hotCourses.value.map(c => orderApi.hasPurchased(c.id).catch(() => ({ data: { purchased: false } })))
-        )
-        courseSystems.value = courseSystems.value.map((c, i) => ({ ...c, isPurchased: systemChecks[i]?.data?.purchased || false }))
-        hotCourses.value = hotCourses.value.map((c, i) => ({ ...c, isPurchased: hotChecks[i]?.data?.purchased || false }))
+        courseSystems.value = courseSystems.value.map((c, i) => ({ ...c, isPurchased: systemChecks[i]?.data || false }))
       } catch (e) {}
     }
   } catch (error) {
@@ -222,7 +218,7 @@ const fetchFlashSale = async () => {
       if (ek && localStorage.getItem('token')) {
         try {
           const purchaseRes: any = await orderApi.hasPurchased(ek)
-          isPurchased = purchaseRes.data?.purchased || false
+          isPurchased = purchaseRes.data || false
         } catch {}
       }
       flashSale.value = {

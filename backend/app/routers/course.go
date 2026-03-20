@@ -16,6 +16,7 @@ func registerCourseRouter(apiGroup *gin.RouterGroup) {
 
 	course := apiGroup.Group("/api/courses")
 	{
+		course.GET("/hot", jwt.OptionalAuthMiddleware(), courseApi.GetHotCourses)          //热门课程
 		course.GET("/list", jwt.OptionalAuthMiddleware(), courseApi.GetPage)     //课程列表
 		course.GET("/detail", jwt.OptionalAuthMiddleware(), courseApi.GetDetail) //课程详情
 		course.GET("/system_options", courseApi.GetSystemOptions)                //获取系统课程选项

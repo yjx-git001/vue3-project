@@ -88,6 +88,20 @@ func (a CourseApi) CreateSingle(c *gin.Context) {
 	a.OK(nil, "创建成功")
 }
 
+func (a CourseApi) GetHotCourses(c *gin.Context) {
+	a.MakeContext(c)
+
+	userID := c.GetUint("userID")
+	result, err := services.CourseService.GetHotCourses(userID)
+	if err != nil {
+		logger.Sugar.Errorf("get hot courses error: %s", err.Error())
+		a.ErrorApi(err)
+		return
+	}
+
+	a.OK(result, "ok")
+}
+
 func (a CourseApi) GetSystemOptions(c *gin.Context) {
 	a.MakeContext(c)
 

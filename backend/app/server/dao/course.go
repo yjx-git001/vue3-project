@@ -146,6 +146,52 @@ func (d courseDao) GetByEk(tx *gorm.DB, ek int64) (*models.Course, error) {
 	return &course, err
 }
 
+type hotCourseRow struct {
+	ID             uint                                `gorm:"column:id"`
+	Ek             int64                               `gorm:"column:ek"`
+	Title          string                              `gorm:"column:title"`
+	CourseTime     int                                 `gorm:"column:course_time"`
+	Price          int64                               `gorm:"column:price"`
+	OriginalPrice  int64                               `gorm:"column:original_price"`
+	Image          string                              `gorm:"column:image"`
+	CourseCategory models.CourseCategory               `gorm:"column:course_category"`
+	ParentEk       int64                               `gorm:"column:parent_ek"`
+	CourseTagClass models.Array[models.CourseTagClass] `gorm:"column:course_tag_class"`
+}
+
+func (d courseDao) GetHotCourses(tx *gorm.DB) ([]dto.CoursePageResp, error) {
+	if tx == nil {
+		tx = db.Db
+	}
+	var rows []hotCourseRow
+	err := tx.Debug().Table("courses").
+		Select("courses.id, courses.ek, courses.course_name AS title, courses.course_time, courses.price, courses.original_price, courses.image, courses.course_category, courses.parent_ek, courses.course_tag_class").
+		Where("courses.deleted_at IS NULL").
+		Joins("LEFT JOIN (SELECT course_ek, COUNT(*) AS buy_count FROM orders WHERE status = 2 GROUP BY course_ek) AS o ON courses.ek = o.course_ek").
+		Order("buy_count DESC").
+		Limit(4).
+		Scan(&rows).Error
+	if err != nil {
+		return nil, err
+	}
+	result := make([]dto.CoursePageResp, len(rows))
+	for i, r := range rows {
+		result[i] = dto.CoursePageResp{
+			ID:             r.ID,
+			Ek:             r.Ek,
+			Title:          r.Title,
+			CourseTime:     r.CourseTime,
+			Price:          r.Price,
+			OriginalPrice:  r.OriginalPrice,
+			Image:          r.Image,
+			CourseCategory: r.CourseCategory,
+			ParentEk:       r.ParentEk,
+			CourseTagClass: r.CourseTagClass,
+		}
+	}
+	return result, nil
+}
+
 func (d courseDao) GetSystemOptions(tx *gorm.DB) ([]dto.CourseSystemOption, error) {
 	if tx == nil {
 		tx = db.Db

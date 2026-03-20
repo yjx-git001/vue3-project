@@ -26,6 +26,9 @@ export const courseApi = {
   }) {
     return request.get('/courses/list', { params })
   },
+  getHotCourses() {
+    return request.get('/courses/hot')
+  },
   getCourseDetail(ek: number, courseCategory?: number) {
     return request.get('/courses/detail', { params: { ek, courseCategory } })
   },

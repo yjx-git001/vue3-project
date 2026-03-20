@@ -116,7 +116,7 @@ const handleSubmit = async () => {
     const ek = Number(route.query.ek)
     const payType = paymentMethod.value === 'wechat' ? 1 : 2
     await orderApi.pay(orderNo.value, payType, cardNumber.value || undefined)
-    router.push('/course/' + ek)
+    router.go(-2)
   } catch (e: any) {
     payError.value = e.response?.data?.msg || '支付失败'
   } finally {

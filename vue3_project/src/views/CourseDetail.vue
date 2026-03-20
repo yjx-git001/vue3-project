@@ -134,7 +134,7 @@ const checkPurchased = async () => {
   try {
     const ek = Number(route.params.id)
     const res: any = await orderApi.hasPurchased(ek)
-    purchased.value = res.data?.purchased || false
+    purchased.value = res.data || false
   } catch (e) {}
 }
 

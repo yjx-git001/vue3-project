@@ -193,6 +193,28 @@ func (s courseService) CreateSingle(req *dto.CourseSingleCreateReq) error {
 	return dao.CourseDao.CreateSingle(db.Db, course)
 }
 
+func (s courseService) GetHotCourses(userID uint) ([]dto.CoursePageResp, error) {
+	list, err := dao.CourseDao.GetHotCourses(db.Db)
+	if err != nil {
+		return nil, err
+	}
+	for i := range list {
+		list[i].CourseCategoryStr = models.CourseCategoryMap[list[i].CourseCategory]
+		list[i].CourseTagClassStr = convertTagClassToStr(list[i].CourseTagClass)
+	}
+	if userID > 0 {
+		eks := make([]int64, 0, len(list))
+		for _, c := range list {
+			eks = append(eks, c.Ek)
+		}
+		purchasedMap := getPurchasedMap(userID, eks)
+		for i := range list {
+			list[i].Purchased = purchasedMap[list[i].Ek]
+		}
+	}
+	return list, nil
+}
+
 func (s courseService) GetSystemOptions() ([]dto.CourseSystemOption, error) {
 	return dao.CourseDao.GetSystemOptions(db.Db)
 }
