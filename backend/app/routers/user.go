@@ -13,6 +13,7 @@ func init() {
 
 func registerUserRouter(apiGroup *gin.RouterGroup) {
 	userApi := httpapis.UserApi{}
+	courseApi := httpapis.CourseApi{}
 
 	user := apiGroup.Group("/api/user")
 	{
@@ -22,7 +23,8 @@ func registerUserRouter(apiGroup *gin.RouterGroup) {
 
 	auth := apiGroup.Group("/api/user").Use(jwt.AuthMiddleware())
 	{
-		auth.GET("/info", userApi.GetUserInfo)      //获取用户信息
-		auth.PUT("/profile", userApi.UpdateProfile) //更新用户资料
+		auth.GET("/info", userApi.GetUserInfo)        //获取用户信息
+		auth.PUT("/profile", userApi.UpdateProfile)   //更新用户资料
+		auth.GET("/courses", courseApi.GetMyCourses)  //获取我的已购课程
 	}
 }

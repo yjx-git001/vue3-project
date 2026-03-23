@@ -192,6 +192,75 @@ func (d courseDao) GetHotCourses(tx *gorm.DB) ([]dto.CoursePageResp, error) {
 	return result, nil
 }
 
+func (d courseDao) GetMyCourses(tx *gorm.DB, userID uint) ([]dto.MyCourseResp, error) {
+	if tx == nil {
+		tx = db.Db
+	}
+
+	// 1. 取该用户所有已支付订单的 course_ek
+	var paidEks []int64
+	if err := tx.Model(&models.Order{}).
+		Where("user_id = ? AND status = ?", userID, models.OrderStatusPaid).
+		Pluck("course_ek", &paidEks).Error; err != nil {
+		return nil, err
+	}
+	if len(paidEks) == 0 {
+		return []dto.MyCourseResp{}, nil
+	}
+
+	// 2. 查这些课程的基本信息
+	var courses []models.Course
+	if err := tx.Select("ek, course_name, image, course_category, parent_ek").
+		Where("ek IN ? AND deleted_at IS NULL", paidEks).
+		Find(&courses).Error; err != nil {
+		return nil, err
+	}
+
+	// 3. 收集其中体系课程的 ek，查它们的子单门课
+	var systemEks []int64
+	for _, c := range courses {
+		if c.CourseCategory == models.CourseCategorySystem {
+			systemEks = append(systemEks, c.Ek)
+		}
+	}
+
+	var children []models.Course
+	if len(systemEks) > 0 {
+		if err := tx.Select("ek, course_name, image, course_category, parent_ek").
+			Where("parent_ek IN ? AND course_category = ? AND deleted_at IS NULL",
+				systemEks, models.CourseCategorySingle).
+			Find(&children).Error; err != nil {
+			return nil, err
+		}
+	}
+
+	// 4. 合并去重（以 ek 为 key）
+	seen := make(map[int64]struct{})
+	result := make([]dto.MyCourseResp, 0, len(courses)+len(children))
+
+	addCourse := func(ek int64, name, image string, category models.CourseCategory) {
+		if _, ok := seen[ek]; ok {
+			return
+		}
+		seen[ek] = struct{}{}
+		result = append(result, dto.MyCourseResp{
+			Ek:             ek,
+			CourseName:     name,
+			Image:          image,
+			CourseCategory: category,
+		})
+	}
+
+	for _, c := range courses {
+		addCourse(c.Ek, c.CourseName, c.Image, c.CourseCategory)
+	}
+	for _, c := range children {
+		addCourse(c.Ek, c.CourseName, c.Image, c.CourseCategory)
+	}
+
+	return result, nil
+}
+
 func (d courseDao) GetSystemOptions(tx *gorm.DB) ([]dto.CourseSystemOption, error) {
 	if tx == nil {
 		tx = db.Db

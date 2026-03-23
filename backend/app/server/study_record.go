@@ -15,6 +15,7 @@ var StudyRecordService = new(studyRecordService)
 func (s studyRecordService) Add(userID uint, req *dto.AddStudyRecordReq) error {
 	record := &models.StudyRecord{
 		UserID:   userID,
+		CourseEk: req.CourseEk,
 		Duration: req.Duration,
 		Date:     time.Now(),
 	}
@@ -32,6 +33,17 @@ func (s studyRecordService) GetStats(userID uint) (*dto.StudyStatsResp, error) {
 	}
 	return &dto.StudyStatsResp{
 		TodayDuration: today,
+		TotalDuration: total,
+	}, nil
+}
+
+func (s studyRecordService) GetCourseDuration(userID uint, courseEk int64) (*dto.CourseDurationResp, error) {
+	total, err := dao.StudyRecordDao.GetCourseDuration(db.Db, userID, courseEk)
+	if err != nil {
+		return nil, err
+	}
+	return &dto.CourseDurationResp{
+		CourseEk:      courseEk,
 		TotalDuration: total,
 	}, nil
 }

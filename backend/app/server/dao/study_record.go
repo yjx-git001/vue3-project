@@ -33,3 +33,12 @@ func (d studyRecordDao) GetTotalDuration(db *gorm.DB, userID uint) (int, error) 
 		Scan(&total).Error
 	return total, err
 }
+
+func (d studyRecordDao) GetCourseDuration(db *gorm.DB, userID uint, courseEk int64) (int, error) {
+	var total int
+	err := db.Model(&models.StudyRecord{}).
+		Select("COALESCE(SUM(duration), 0)").
+		Where("user_id = ? AND course_ek = ?", userID, courseEk).
+		Scan(&total).Error
+	return total, err
+}

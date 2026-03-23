@@ -6,175 +6,404 @@
         <svg viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
       </button>
       <span class="nav-title">考题训练</span>
+      <span class="nav-placeholder"></span>
     </header>
 
-    <!-- 课程信息区 -->
-    <div class="course-info-section">
-      <h2 class="course-name">港口特种设备检修课程</h2>
-
-      <!-- 题目类型标签 -->
-      <div class="question-tabs">
-        <div
-          v-for="tab in questionTabs"
-          :key="tab.id"
-          :class="['tab-item', { active: activeTab === tab.id }]"
-          @click="activeTab = tab.id"
-        >
-          {{ tab.name }}({{ tab.count }})
-        </div>
-      </div>
-
-      <div class="exam-status">
-        <div class="question-type-link">
-          <a href="#" class="type-link">单选题</a>
-        </div>
-        <div class="status-badge error">错误</div>
-      </div>
+    <!-- 加载中 -->
+    <div v-if="loading" class="loading-wrap">
+      <p>加载题目中...</p>
     </div>
 
-    <main class="exam-content">
-      <!-- 题目内容 -->
-      <div class="question-content">
-        <p class="question-text">
-          {{ currentQuestionData.number }}.{{ currentQuestionData.text }}
-        </p>
-      </div>
+    <!-- 无题目 -->
+    <div v-else-if="questions.length === 0" class="empty-wrap">
+      <p>该题型暂无题目</p>
+      <button class="back-text-btn" @click="$router.back()">返回</button>
+    </div>
 
-      <!-- 选项列表 -->
-      <div class="options-list">
-        <div
-          v-for="option in currentQuestionData.options"
-          :key="option.id"
-          :class="['option-item', {
-            selected: selectedAnswer === option.id,
-            wrong: selectedAnswer === option.id && option.id !== correctAnswer
-          }]"
-          @click="selectAnswer(option.id)"
-        >
-          <div class="option-content">
-            <div class="option-radio">
-              <svg v-if="selectedAnswer === option.id" viewBox="0 0 24 24" class="radio-icon">
-                <circle cx="12" cy="12" r="5" />
-              </svg>
+    <template v-else>
+      <!-- 课程信息区 -->
+      <div class="course-info-section">
+        <!-- 第一行：课程名 -->
+        <h2 class="course-name">{{ courseName || (isMockMode ? '模拟考试' : '考题训练') }}</h2>
+
+        <!-- 第二行：横排题型 tab（左）+ 答题进度（右），左右齐平 -->
+        <div class="tabs-progress-row">
+          <div class="question-tabs">
+            <div
+              v-for="tab in questionTypeTabs"
+              :key="tab.type"
+              :class="['tab-item', { active: activeType === tab.type }]"
+              @click="switchType(tab.type)"
+            >
+              {{ tab.label }}({{ tab.count }})
             </div>
-            <span class="option-label">{{ option.label }}</span>
-            <span class="option-text">{{ option.text }}</span>
+          </div>
+          <div class="total-progress-badge">
+            <span class="progress-answered">{{ totalAnswered }}</span>
+            <span class="progress-total">/{{ allQuestions.length }}</span>
           </div>
         </div>
       </div>
 
-      <!-- 答案解析区 -->
-      <div class="answer-section">
-        <div class="correct-answer">
-          <span class="label">正确答案：</span>
-          <span class="value">{{ correctAnswer }}</span>
-        </div>
-        <div class="answer-analysis">
-          <span class="label">错题解析：</span>
-          <p class="analysis-text">{{ analysisText }}</p>
-        </div>
-      </div>
-    </main>
-
-    <!-- 答题卡弹窗 -->
-    <div v-if="showAnswerCard" class="answer-card-modal" @click="showAnswerCard = false">
-      <div class="modal-content" @click.stop>
-        <h3 class="modal-title">答题卡</h3>
-        <div class="filter-tabs">
-          <button class="clear-btn" @click="clearAnswers">
-            <svg viewBox="0 0 24 24" class="clear-icon">
-              <path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19Z" />
-            </svg>
-            清空答题卡
-          </button>
-          <div class="status-indicators">
-            <div class="status-item">
-              <span class="status-dot answered-dot"></span>
-              <span class="status-text">已答</span>
-            </div>
-            <div class="status-item">
-              <span class="status-dot unanswered-dot"></span>
-              <span class="status-text">未答</span>
+      <main class="exam-content">
+        <!-- 白色题目卡片：题型标签 + 答题结果 + 题目文字 -->
+        <div class="question-card">
+          <div class="question-card-header">
+            <span class="question-type-tag">{{ typeLabel }}</span>
+            <div v-if="answerResult !== null" class="status-badge" :class="answerResult ? 'correct' : 'error'">
+              {{ answerResult ? '正确' : '错误' }}
             </div>
           </div>
+          <p class="question-text">
+            {{ currentIndex + 1 }}.{{ currentQuestion.content }}
+          </p>
         </div>
-        <div class="question-grid">
-          <button
-            v-for="num in totalQuestions"
-            :key="num"
-            :class="['question-number', answers[num] ? 'answered' : '']"
-            @click="goToQuestion(num)"
+
+        <!-- 判断题选项 -->
+        <div v-if="activeType === 3" class="options-list">
+          <div
+            v-for="opt in judgeOptions"
+            :key="opt.value"
+            :class="['option-item', getOptionClass(opt.value)]"
+            @click="selectAnswer(opt.value)"
           >
-            {{ num }}
-          </button>
+            <div class="option-content">
+              <div class="option-radio" :class="{ selected: isSelected(opt.value), correct: isCorrectOption(opt.value), wrong: isWrongOption(opt.value) }">
+                <svg v-if="isSelected(opt.value)" viewBox="0 0 24 24" class="radio-icon">
+                  <circle cx="12" cy="12" r="5" />
+                </svg>
+              </div>
+              <span class="option-text">{{ opt.label }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 单选/多选选项 -->
+        <div v-else class="options-list">
+          <div
+            v-for="opt in currentOptions"
+            :key="opt.key"
+            :class="['option-item', getOptionClass(opt.key)]"
+            @click="selectAnswer(opt.key)"
+          >
+            <div class="option-content">
+              <div class="option-radio" :class="{ selected: isSelected(opt.key), correct: isCorrectOption(opt.key), wrong: isWrongOption(opt.key) }">
+                <svg v-if="isSelected(opt.key)" viewBox="0 0 24 24" class="radio-icon">
+                  <circle cx="12" cy="12" r="5" />
+                </svg>
+              </div>
+              <span class="option-label">{{ opt.key }}</span>
+              <span class="option-text">{{ opt.text }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 答案解析区（答题后显示） -->
+        <div v-if="answerResult !== null" class="answer-section">
+          <div class="correct-answer">
+            <span class="label">正确答案：</span>
+            <span class="value">{{ currentQuestion.answer }}</span>
+          </div>
+          <div v-if="currentQuestion.analysis" class="answer-analysis">
+            <span class="label">题目解析：</span>
+            <p class="analysis-text">{{ currentQuestion.analysis }}</p>
+          </div>
+        </div>
+
+        <!-- 多选题提交按钮 -->
+        <div v-if="activeType === 2 && answerResult === null && multiSelected.length > 0" class="submit-wrap">
+          <button class="submit-btn" @click="submitMultiple">提交答案</button>
+        </div>
+      </main>
+
+      <!-- 答题卡弹窗 -->
+      <div v-if="showAnswerCard" class="answer-card-modal" @click="showAnswerCard = false">
+        <div class="modal-content" @click.stop>
+          <h3 class="modal-title">答题卡</h3>
+          <div class="filter-tabs">
+            <button class="clear-btn" @click="clearAnswers">
+              <svg viewBox="0 0 24 24" class="clear-icon">
+                <path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19Z" />
+              </svg>
+              清空答题卡
+            </button>
+            <div class="status-indicators">
+              <div class="status-item">
+                <span class="status-dot answered-dot"></span>
+                <span class="status-text">已答</span>
+              </div>
+              <div class="status-item">
+                <span class="status-dot unanswered-dot"></span>
+                <span class="status-text">未答</span>
+              </div>
+            </div>
+          </div>
+          <div class="question-grid">
+            <button
+              v-for="(_, idx) in questions"
+              :key="idx"
+              :class="['question-number', answers[idx] !== undefined ? 'answered' : '']"
+              @click="goToQuestion(idx)"
+            >
+              {{ idx + 1 }}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- 底部导航 -->
-    <footer class="bottom-nav">
-      <button class="nav-btn prev" @click="previousQuestion">
-        <svg viewBox="0 0 24 24"><path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z" /></svg>
-      </button>
-      <button class="nav-btn answer-card" @click="showAnswerCard = true">
-        <svg viewBox="0 0 24 24"><path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,17H7V15H17V17M17,13H7V11H17V13M17,9H7V7H17V9Z" /></svg>
-        <span>答题卡</span>
-      </button>
-      <button class="nav-btn next" @click="nextQuestion">
-        <svg viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
-      </button>
-    </footer>
+      <!-- 底部导航 -->
+      <footer class="bottom-nav">
+        <button class="nav-btn prev" @click="previousQuestion" :disabled="currentIndex === 0">
+          <svg viewBox="0 0 24 24"><path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z" /></svg>
+        </button>
+        <button class="nav-btn answer-card" @click="showAnswerCard = true">
+          <svg viewBox="0 0 24 24"><path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,17H7V15H17V17M17,13H7V11H17V13M17,9H7V7H17V9Z" /></svg>
+          <span>答题卡</span>
+        </button>
+        <button class="nav-btn next" @click="nextQuestion" :disabled="currentIndex === questions.length - 1">
+          <svg viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+        </button>
+      </footer>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { questionApi, courseApi, mockExamApi, studyApi } from '@/api'
 
-const activeTab = ref('single')
-const selectedAnswer = ref('A')
-const correctAnswer = ref('B')
-const analysisText = ref('XXXXXXXXXXX')
-const showAnswerCard = ref(false)
-const filterType = ref('all')
-const totalQuestions = ref(20)
-const answers = ref<Record<number, string>>({ 1: 'A' })
+const route = useRoute()
 
-const questionTabs = ref([
-  { id: 'single', name: '单选题', count: 20 },
-  { id: 'multiple', name: '多选题', count: 10 },
-  { id: 'judge', name: '判断题', count: 30 }
-])
+const loading = ref(true)
+const courseEk = ref(0)
+const courseName = ref('')
+const isMockMode = ref(false)  // 是否模拟考试模式
+const activeType = ref(1)  // 1=单选 2=多选 3=判断
 
-const currentQuestionData = ref({
-  number: 1,
-  text: '共识定额去度假啊客户收问题问题问题问题问题问题问题问题问题问题问题问题问题问题问题问题问题问题问题问题问题问题问题问题（）。',
-  options: [
-    { id: 'A', label: 'A', text: '30.5吨' },
-    { id: 'B', label: 'B', text: '30.5吨' },
-    { id: 'C', label: 'C', text: '30.5吨' },
-    { id: 'D', label: 'D', text: '30.5吨' }
+// 全部题目（按题型分组）
+const allQuestions = ref<any[]>([])
+
+// 当前题型的题目
+const questions = computed(() =>
+  allQuestions.value.filter(q => q.questionType === activeType.value)
+)
+
+// 题型tab（只显示有题的）
+const questionTypeTabs = computed(() => {
+  const map = [
+    { type: 1, label: '单选题' },
+    { type: 2, label: '多选题' },
+    { type: 3, label: '判断题' }
   ]
+  return map
+    .map(t => ({ ...t, count: allQuestions.value.filter(q => q.questionType === t.type).length }))
+    .filter(t => t.count > 0)
 })
 
-const selectAnswer = (answerId: string) => {
-  selectedAnswer.value = answerId
+const typeLabel = computed(() => {
+  const m: Record<number, string> = { 1: '单选题', 2: '多选题', 3: '判断题' }
+  return m[activeType.value] || ''
+})
+
+// 当前题目索引
+const currentIndex = ref(0)
+const currentQuestion = computed(() => (questions.value[currentIndex.value] || {}) as any)
+
+// 当前题目选项（单选/多选）
+const currentOptions = computed(() => {
+  const q = currentQuestion.value as any
+  const opts: { key: string; text: string }[] = []
+  if (q.optionA) opts.push({ key: 'A', text: q.optionA })
+  if (q.optionB) opts.push({ key: 'B', text: q.optionB })
+  if (q.optionC) opts.push({ key: 'C', text: q.optionC })
+  if (q.optionD) opts.push({ key: 'D', text: q.optionD })
+  return opts
+})
+
+// 判断题选项
+const judgeOptions = [
+  { value: 'T', label: '正确（T）' },
+  { value: 'F', label: '错误（F）' }
+]
+
+// 答题记录：按题型分组，每种题型内以 index 为 key
+// 多选题临时已选项
+const multiSelected = ref<string[]>([])
+// 当前题目答题结果
+const answerResult = ref<boolean | null>(null)
+
+const showAnswerCard = ref(false)
+
+// 切换题型时重置
+const switchType = (type: number) => {
+  activeType.value = type
+  currentIndex.value = 0
+  answerResult.value = null
+  multiSelected.value = []
+}
+
+// 分题型答题记录
+const typeAnswers = ref<Record<number, Record<number, string>>>({ 1: {}, 2: {}, 3: {} })
+
+// 当前题型的答题记录（快捷访问）
+const answers = computed(() => typeAnswers.value[activeType.value] || {})
+
+// 所有题型合计已答数
+const totalAnswered = computed(() =>
+  Object.values(typeAnswers.value).reduce((sum, rec) => sum + Object.keys(rec).length, 0)
+)
+
+// 选择答案（单选/判断）
+const selectAnswer = (key: string) => {
+  if (answerResult.value !== null) return  // 已答过，不能再选
+  if (activeType.value === 2) {
+    // 多选：toggle
+    const idx = multiSelected.value.indexOf(key)
+    if (idx >= 0) {
+      multiSelected.value.splice(idx, 1)
+    } else {
+      multiSelected.value.push(key)
+    }
+    return
+  }
+  // 单选/判断：立即判断
+  const correct = (currentQuestion.value as any).answer
+  ;(typeAnswers.value[activeType.value] as Record<number, string>)[currentIndex.value] = key
+  answerResult.value = key === correct
+}
+
+// 多选提交
+const submitMultiple = () => {
+  const userAnswer = multiSelected.value.sort().join('')
+  const correct = (currentQuestion.value as any).answer
+  ;(typeAnswers.value[activeType.value] as Record<number, string>)[currentIndex.value] = userAnswer
+  answerResult.value = userAnswer === correct
+}
+
+// 选项样式
+const isSelected = (key: string) => {
+  if (activeType.value === 2) return multiSelected.value.includes(key)
+  return answers.value[currentIndex.value] === key
+}
+const isCorrectOption = (key: string) => {
+  if (answerResult.value === null) return false
+  const correct = currentQuestion.value.answer || ''
+  return correct.includes(key)
+}
+const isWrongOption = (key: string) => {
+  if (answerResult.value === null || answerResult.value) return false
+  return isSelected(key) && !isCorrectOption(key)
+}
+const getOptionClass = (key: string) => {
+  if (answerResult.value === null) {
+    return { selected: isSelected(key) }
+  }
+  return {
+    correct: isCorrectOption(key),
+    wrong: isWrongOption(key)
+  }
 }
 
 const previousQuestion = () => {
-  // 上一题逻辑
+  if (currentIndex.value > 0) {
+    currentIndex.value--
+    const rec = typeAnswers.value[activeType.value]?.[currentIndex.value]
+    const correctAns: string = (questions.value[currentIndex.value] as any)?.answer ?? ''
+    answerResult.value = rec !== undefined ? rec === correctAns : null
+    multiSelected.value = rec ? rec.split('') : []
+  }
 }
 
 const nextQuestion = () => {
-  // 下一题逻辑
+  if (currentIndex.value < questions.value.length - 1) {
+    currentIndex.value++
+    const rec = typeAnswers.value[activeType.value]?.[currentIndex.value]
+    const correctAns: string = (questions.value[currentIndex.value] as any)?.answer ?? ''
+    answerResult.value = rec !== undefined ? rec === correctAns : null
+    multiSelected.value = rec ? rec.split('') : []
+  }
 }
 
-const goToQuestion = (_num: number) => {
+const goToQuestion = (idx: number) => {
+  currentIndex.value = idx
+  const rec = typeAnswers.value[activeType.value]?.[idx]
+  const correctAns: string = (questions.value[idx] as any)?.answer ?? ''
+  answerResult.value = rec !== undefined ? rec === correctAns : null
+  multiSelected.value = rec ? rec.split('') : []
   showAnswerCard.value = false
 }
 
-function clearAnswers() {
-  answers.value = {}
+const clearAnswers = () => {
+  typeAnswers.value = { 1: {}, 2: {}, 3: {} }
+  answerResult.value = null
+  multiSelected.value = []
 }
+
+// 切换题目时重置答题状态
+watch(currentIndex, () => {
+  if ((typeAnswers.value[activeType.value]?.[currentIndex.value]) === undefined) {
+    answerResult.value = null
+    multiSelected.value = []
+  }
+})
+
+onMounted(async () => {
+  courseEk.value = Number(route.params.id)
+  const modeParam = route.query.mode as string
+  const typeParam = Number(route.query.type)
+
+  isMockMode.value = modeParam === 'mock'
+
+  if (!isMockMode.value && typeParam && [1, 2, 3].includes(typeParam)) {
+    activeType.value = typeParam
+  }
+
+  try {
+    const [questionsRes, detailRes]: any[] = await Promise.all([
+      questionApi.getList(courseEk.value),
+      courseApi.getCourseDetail(courseEk.value)
+    ])
+    const allPool: any[] = questionsRes.data || []
+    courseName.value = detailRes.data?.courseName || ''
+
+    if (isMockMode.value) {
+      // 模拟考试模式：按配置随机抽题
+      const cfgRes: any = await mockExamApi.getConfig(courseEk.value)
+      const cfg = cfgRes.data || { singleCount: 0, multipleCount: 0, judgeCount: 0 }
+
+      const shuffle = (arr: any[]) => arr.slice().sort(() => Math.random() - 0.5)
+      const singles = shuffle(allPool.filter(q => q.questionType === 1)).slice(0, cfg.singleCount)
+      const multiples = shuffle(allPool.filter(q => q.questionType === 2)).slice(0, cfg.multipleCount)
+      const judges = shuffle(allPool.filter(q => q.questionType === 3)).slice(0, cfg.judgeCount)
+      allQuestions.value = [...singles, ...multiples, ...judges]
+
+      // 默认激活第一个有题的题型
+      if (singles.length > 0) activeType.value = 1
+      else if (multiples.length > 0) activeType.value = 2
+      else if (judges.length > 0) activeType.value = 3
+    } else {
+      allQuestions.value = allPool
+    }
+  } catch {
+    allQuestions.value = []
+  } finally {
+    loading.value = false
+  }
+})
+
+let startTime = 0
+onMounted(() => { startTime = Date.now() })
+
+onUnmounted(async () => {
+  const token = localStorage.getItem('token')
+  if (!token) return
+  const duration = Math.floor((Date.now() - startTime) / 1000)
+  if (duration < 1) return
+  try {
+    await studyApi.addRecord(duration, courseEk.value)
+  } catch {}
+})
 </script>
 
 <style scoped>
@@ -214,12 +443,41 @@ function clearAnswers() {
   text-align: center;
 }
 
+.nav-progress {
+  font-size: 14px;
+  color: #999;
+  min-width: 48px;
+  text-align: right;
+}
+
+.loading-wrap, .empty-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  color: #999;
+  font-size: 15px;
+  gap: 16px;
+}
+
+.back-text-btn {
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
 .course-info-section {
   background-color: #fff;
   padding: 16px;
   margin-bottom: 12px;
 }
 
+/* 课程名 + 右侧进度数字 */
 .course-name {
   font-size: 16px;
   font-weight: 600;
@@ -227,10 +485,34 @@ function clearAnswers() {
   margin: 0 0 12px 0;
 }
 
+/* tab 与进度数字同行，左右撑满 */
+.tabs-progress-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 右侧进度：已答/总数 */
+.total-progress-badge {
+  display: flex;
+  align-items: baseline;
+  gap: 1px;
+  flex-shrink: 0;
+}
+.progress-answered {
+  font-size: 18px;
+  font-weight: 700;
+  color: #3b82f6;
+  line-height: 1;
+}
+.progress-total {
+  font-size: 13px;
+  color: #999;
+}
+
 .question-tabs {
   display: flex;
   gap: 24px;
-  margin-bottom: 12px;
 }
 
 .tab-item {
@@ -257,23 +539,6 @@ function clearAnswers() {
   background-color: #3b82f6;
 }
 
-.exam-status {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.question-type-link {
-  flex: 1;
-}
-
-.type-link {
-  color: #3b82f6;
-  text-decoration: none;
-  font-size: 15px;
-  font-weight: 500;
-}
-
 .status-badge {
   padding: 4px 12px;
   border-radius: 4px;
@@ -286,12 +551,34 @@ function clearAnswers() {
   background-color: #fff1f0;
 }
 
+.status-badge.correct {
+  color: #52c41a;
+  background-color: #f6ffed;
+}
+
 .exam-content {
   padding: 16px;
 }
 
-.question-content {
-  margin-bottom: 20px;
+/* 白色题目卡片 */
+.question-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.question-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.question-type-tag {
+  font-size: 14px;
+  font-weight: 600;
+  color: #3b82f6;
 }
 
 .question-text {
@@ -314,10 +601,21 @@ function clearAnswers() {
   padding: 14px 16px;
   cursor: pointer;
   transition: all 0.2s;
+  border: 2px solid transparent;
 }
 
-.option-item.selected.wrong {
-  background-color: #ffe4e6;
+.option-item.correct {
+  background-color: #f6ffed;
+  border-color: #52c41a;
+}
+
+.option-item.wrong {
+  background-color: #fff1f0;
+  border-color: #ff4d4f;
+}
+
+.option-item.selected {
+  border-color: #3b82f6;
 }
 
 .option-content {
@@ -330,17 +628,32 @@ function clearAnswers() {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  border: 2px solid #ff4d4f;
+  border: 2px solid #ddd;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: border-color 0.2s;
+}
+
+.option-radio.selected {
+  border-color: #3b82f6;
+}
+
+.option-radio.correct {
+  border-color: #52c41a;
+  background: #52c41a;
+}
+
+.option-radio.wrong {
+  border-color: #ff4d4f;
+  background: #ff4d4f;
 }
 
 .radio-icon {
   width: 10px;
   height: 10px;
-  fill: #ff4d4f;
+  fill: #fff;
 }
 
 .option-label {
@@ -358,6 +671,7 @@ function clearAnswers() {
   background-color: #fff;
   border-radius: 12px;
   padding: 16px;
+  margin-bottom: 12px;
 }
 
 .correct-answer {
@@ -391,6 +705,21 @@ function clearAnswers() {
   margin: 0;
 }
 
+.submit-wrap {
+  margin-top: 16px;
+  text-align: center;
+}
+
+.submit-btn {
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 24px;
+  padding: 12px 40px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
 .bottom-nav {
   position: fixed;
   bottom: 0;
@@ -413,6 +742,11 @@ function clearAnswers() {
   align-items: center;
   gap: 4px;
   color: #666;
+}
+
+.nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
 .nav-btn svg {
@@ -493,6 +827,7 @@ function clearAnswers() {
   width: 16px;
   height: 16px;
   fill: #ff9800;
+  border-radius: 10px;
 }
 
 .status-indicators {
@@ -551,4 +886,3 @@ function clearAnswers() {
   font-weight: 600;
 }
 </style>
-

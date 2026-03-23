@@ -39,6 +39,7 @@
     <main class="content-area">
       <!-- 目录 -->
       <div v-if="activeTab === 'catalog'" class="catalog-content">
+        <div v-if="lessons.length === 0" class="empty-tip">暂无视频目录</div>
         <div
           v-for="lesson in lessons"
           :key="lesson.id"
@@ -62,14 +63,14 @@
       <!-- 考题 -->
       <div v-if="activeTab === 'exam'" class="exam-content">
         <div class="chapter-header">
-          <span class="chapter-title">港机设备-起重机械</span>
-          <button class="switch-course-btn">
+          <span class="chapter-title">{{ currentLessonName }}</span>
+          <button class="switch-course-btn" @click="showSwitchModal = true">
             切换课程
             <svg viewBox="0 0 24 24" class="dropdown-icon"><path d="M7,10L12,15L17,10H7Z" /></svg>
           </button>
         </div>
         <div class="exam-grid">
-          <div class="exam-card" @click="showExamModal = true">
+          <div class="exam-card" @click="openExamModal">
             <img src="/images/exam-practice-icon.png" class="exam-icon-img" />
             <span class="exam-label">考题训练</span>
           </div>
@@ -82,31 +83,47 @@
             <span class="exam-label">模考记录</span>
           </div>
         </div>
-        <div class="exam-card-wide">
+        <div class="exam-card-wide" @click="startMockExam">
           <img src="/images/mock-exam-icon.png" class="exam-icon-img" />
           <span class="exam-label">模拟考试</span>
         </div>
       </div>
 
+    <!-- 切换课程弹窗 -->
+    <div v-if="showSwitchModal" class="modal-overlay" @click="showSwitchModal = false">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header-row">
+          <span class="modal-title-text">切换课程</span>
+          <button class="modal-close-btn" @click="showSwitchModal = false">✕</button>
+        </div>
+        <div class="question-types">
+          <div
+            v-for="lesson in lessons"
+            :key="lesson.id"
+            class="type-item"
+            :class="{ 'type-item-active': selectedLessonId === lesson.id }"
+            @click="selectLesson(lesson)"
+          >
+            <span>{{ lesson.title }}</span>
+            <span class="count">{{ lesson.duration }}</span>
+          </div>
+        </div>
+        <button class="cancel-btn" @click="showSwitchModal = false">取消</button>
+      </div>
+    </div>
+
     <!-- 考题训练弹窗 -->
     <div v-if="showExamModal" class="modal-overlay" @click="showExamModal = false">
       <div class="modal-content" @click.stop>
         <div class="question-types">
-          <div class="type-item" @click="startPractice('single')">
-            <span>单选题</span>
-            <span class="count">(20)</span>
-          </div>
-          <div class="type-item" @click="startPractice('multiple')">
-            <span>多选题</span>
-            <span class="count">(20)</span>
-          </div>
-          <div class="type-item" @click="startPractice('essay')">
-            <span>论述题</span>
-            <span class="count">(XX)</span>
-          </div>
-          <div class="type-item" @click="startPractice('other')">
-            <span>XXX</span>
-            <span class="count">(2)</span>
+          <div
+            v-for="tab in examTypeTabs"
+            :key="tab.type"
+            class="type-item"
+            @click="startPractice(tab.type)"
+          >
+            <span>{{ tab.label }}</span>
+            <span class="count">({{ tab.count }})</span>
           </div>
         </div>
         <button class="cancel-btn" @click="showExamModal = false">取消</button>
@@ -115,17 +132,14 @@
 
       <!-- 笔记 -->
       <div v-if="activeTab === 'notes'" class="notes-content">
-        <div class="notes-text">
-          <p>在港口作业场景中，装载机(常被俗称"装载车")属于场内专用工程机械车辆,而非道路货运车辆。主要用于港口散货、件杂货的铲装、转运、堆垛作业。</p>
-          <p>其车型定位和组分可以从以下维度明确:</p>
-          <p>1.技功能属性属于土方工程机械范畴，核心特征是配备前端铲斗工作装置，区别于货的货物运输功能。装载机的核心作用是货物装卸与场内短驳，不承担长运输任务。</p>
-          <p>2.按作业场景属性港口使用的装载机多为多为多为多为多为多为多为多为多为多为多为多为多为多为多为多为多为多为多为多为多为多为</p>
-        </div>
+        <div v-if="!notesContent" class="empty-tip">暂无笔记内容</div>
+        <div v-else class="notes-text" style="white-space: pre-wrap;">{{ notesContent }}</div>
       </div>
 
       <!-- 附件 -->
       <div v-if="activeTab === 'attachments'">
         <div class="attachments-content">
+          <div v-if="attachments.length === 0" class="empty-tip">暂无附件</div>
           <div
             v-for="file in attachments"
             :key="file.id"
@@ -158,16 +172,62 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { courseApi } from '@/api'
+import { courseApi, questionApi, courseContentApi, mockExamApi } from '@/api'
 
 const router = useRouter()
 const route = useRoute()
 const activeTab = ref('catalog')
 const showExamModal = ref(false)
+const showSwitchModal = ref(false)
 const courseDetail = ref<any>({})
 const imageBaseUrl = 'http://localhost:8080'
+
+// 笔记内容（所有子课程拼接）
+const notesContent = ref('')
+const selectedLessonId = ref<number | null>(null)
+const currentLessonName = computed(() => {
+  const l = lessons.value.find(l => l.id === selectedLessonId.value)
+  return l ? l.title : (lessons.value[0]?.title || '请选择课程')
+})
+
+// 当前课程的题目统计（按题型）
+const examQuestions = ref<any[]>([])
+const examTypeTabs = computed(() => {
+  const single = examQuestions.value.filter(q => q.questionType === 1).length
+  const multiple = examQuestions.value.filter(q => q.questionType === 2).length
+  const judge = examQuestions.value.filter(q => q.questionType === 3).length
+  const tabs = []
+  if (single > 0) tabs.push({ label: '单选题', type: 1, count: single })
+  if (multiple > 0) tabs.push({ label: '多选题', type: 2, count: multiple })
+  if (judge > 0) tabs.push({ label: '判断题', type: 3, count: judge })
+  return tabs
+})
+
+const fetchExamQuestions = async (courseEk: number) => {
+  try {
+    const res: any = await questionApi.getList(courseEk)
+    examQuestions.value = res.data || []
+  } catch {
+    examQuestions.value = []
+  }
+}
+
+const selectLesson = (lesson: any) => {
+  selectedLessonId.value = lesson.id
+  showSwitchModal.value = false
+  // 拉取该课程对应的题目
+  fetchExamQuestions(lesson.courseEk || Number(route.params.id))
+}
+
+const openExamModal = () => {
+  if (examTypeTabs.value.length === 0) {
+    alert('该课程暂无配置题目')
+    return
+  }
+  showExamModal.value = true
+}
 
 onMounted(async () => {
   const ek = Number(route.params.id)
@@ -177,6 +237,120 @@ onMounted(async () => {
       courseDetail.value = res.data
     } catch (e) {
       console.error('获取课程详情失败:', e)
+    }
+    const isSystem = courseDetail.value.courseCategory === 2
+    const subCourses: any[] = isSystem ? (courseDetail.value.courseContent || []) : []
+
+    // 加载视频目录
+    try {
+      if (isSystem) {
+        // 体系课程：聚合所有子课程的视频，带上各自的 courseEk
+        const allVideos = await Promise.all(
+          subCourses.map(async (sub: any) => {
+            try {
+              const vRes: any = await courseContentApi.getVideos(sub.ek)
+              const vList: { sort: number; title: string; duration: string }[] = vRes.data || []
+              return vList.map(v => ({
+                subEk: sub.ek,
+                subName: sub.courseName,
+                sort: v.sort,
+                title: v.title,
+                duration: v.duration || ''
+              }))
+            } catch {
+              return []
+            }
+          })
+        )
+        let globalIdx = 0
+        lessons.value = allVideos.flat().map((v, i) => ({
+          id: ++globalIdx,
+          title: v.title,
+          type: i === 0 ? '正在播放' : '视频',
+          duration: v.duration,
+          isPlaying: i === 0,
+          courseEk: v.subEk
+        }))
+      } else {
+        // 单门课程
+        const vRes: any = await courseContentApi.getVideos(ek)
+        const vList: { sort: number; title: string; duration: string }[] = vRes.data || []
+        lessons.value = vList.map((v, i) => ({
+          id: v.sort,
+          title: v.title,
+          type: i === 0 ? '正在播放' : '视频',
+          duration: v.duration || '',
+          isPlaying: i === 0,
+          courseEk: ek
+        }))
+      }
+    } catch {
+      // 保留默认占位数据
+    }
+
+    // 加载附件列表
+    try {
+      if (isSystem) {
+        // 体系课程：聚合所有子课程附件
+        const allAttachments = await Promise.all(
+          subCourses.map(async (sub: any) => {
+            try {
+              const aRes: any = await courseContentApi.getAttachments(sub.ek)
+              return (aRes.data || []) as { sort: number; name: string }[]
+            } catch {
+              return []
+            }
+          })
+        )
+        let aIdx = 0
+        attachments.value = allAttachments.flat().map(a => ({
+          id: ++aIdx,
+          name: a.name,
+          size: ''
+        }))
+      } else {
+        // 单门课程
+        const aRes: any = await courseContentApi.getAttachments(ek)
+        const aList: { sort: number; name: string }[] = aRes.data || []
+        attachments.value = aList.map(a => ({
+          id: a.sort,
+          name: a.name,
+          size: ''
+        }))
+      }
+    } catch {
+      // 保留默认占位数据
+    }
+
+    // 加载笔记
+    try {
+      if (isSystem) {
+        // 体系课程：聚合所有子课程笔记拼接
+        const notesResults = await Promise.all(
+          subCourses.map(async (sub: any) => {
+            try {
+              const nRes: any = await courseContentApi.getNotes(sub.ek)
+              return nRes.data?.content || ''
+            } catch {
+              return ''
+            }
+          })
+        )
+        notesContent.value = notesResults.filter(c => c).join('\n\n')
+      } else {
+        // 单门课程
+        const nRes: any = await courseContentApi.getNotes(ek)
+        notesContent.value = nRes.data?.content || ''
+      }
+    } catch {
+      notesContent.value = ''
+    }
+
+    // 默认加载题目：体系课程加载第一个子课程的题目，单门课程直接加载
+    const defaultEk = isSystem && subCourses.length > 0 ? subCourses[0].ek : ek
+    await fetchExamQuestions(defaultEk)
+    if (lessons.value.length > 0) {
+      selectedLessonId.value = lessons.value[0].id
     }
   }
 })
@@ -188,54 +362,47 @@ const tabs = [
   { label: '附件', value: 'attachments' }
 ]
 
-const startPractice = (type: string) => {
+const startPractice = (questionType: number) => {
   showExamModal.value = false
-  router.push('/exam_practice/1')
+  // 传当前选中的子课程 ek（如果有），否则用路由 ek（单门课程直接访问时）
+  const selectedLesson = lessons.value.find(l => l.id === selectedLessonId.value)
+  const practiceEk = selectedLesson?.courseEk || Number(route.params.id)
+  router.push(`/exam_practice/${practiceEk}?type=${questionType}`)
 }
 
-const lessons = ref([
-  {
-    id: 1,
-    title: '港机设备-起重机械',
-    type: '正在播放',
-    duration: '09:10',
-    isPlaying: true
-  },
-  {
-    id: 2,
-    title: '港机设备-起重机械',
-    type: '视频',
-    duration: '34:20',
-    isPlaying: false
-  },
-  {
-    id: 3,
-    title: '港机设备-起重机械',
-    type: '视频',
-    duration: '34:20',
-    isPlaying: false
-  },
-  {
-    id: 4,
-    title: '港机设备-起重机械',
-    type: '视频',
-    duration: '34:20',
-    isPlaying: false
+const startMockExam = async () => {
+  // 获取当前选中的子课程 ek
+  const selectedLesson = lessons.value.find(l => l.id === selectedLessonId.value)
+  const mockEk = selectedLesson?.courseEk || Number(route.params.id)
+  // 检查是否有模拟考试配置
+  try {
+    const res: any = await mockExamApi.getConfig(mockEk)
+    const cfg = res.data
+    if (!cfg || (cfg.singleCount === 0 && cfg.multipleCount === 0 && cfg.judgeCount === 0)) {
+      alert('该课程暂未配置模拟考试题目数量，请联系管理员')
+      return
+    }
+  } catch {
+    alert('获取模拟考试配置失败，请重试')
+    return
   }
-])
+  router.push(`/exam_practice/${mockEk}?mode=mock`)
+}
 
-const attachments = ref([
-  {
-    id: 1,
-    name: 'XXXXX资料.pdf',
-    size: '219.8KB'
-  },
-  {
-    id: 2,
-    name: 'XXXXX资料.pdf',
-    size: '219.8KB'
-  }
-])
+const lessons = ref<{
+  id: number
+  title: string
+  type: string
+  duration: string
+  isPlaying: boolean
+  courseEk: number | null
+}[]>([])
+
+const attachments = ref<{
+  id: number
+  name: string
+  size: string
+}[]>([])
 </script>
 
 <style scoped>
@@ -556,15 +723,21 @@ const attachments = ref([
   background-color: #fff;
   padding: 16px;
 }
-
-.notes-text {
-  line-height: 1.8;
+.notes-block {
+  margin-bottom: 20px;
 }
-
-.notes-text p {
+.notes-course-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #3b82f6;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e8f0fe;
+}
+.notes-text {
   font-size: 14px;
   color: #333;
-  margin: 0 0 16px 0;
+  line-height: 1.8;
 }
 
 .attachments-content {
@@ -740,5 +913,38 @@ const attachments = ref([
   color: #333;
   cursor: pointer;
   margin-top: 8px;
+}
+
+.empty-tip {
+  text-align: center;
+  color: #bbb;
+  font-size: 14px;
+  padding: 32px 0;
+}
+
+.modal-header-row {  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.modal-title-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: #999;
+  cursor: pointer;
+  padding: 0 4px;
+  width: auto;
+}
+.type-item-active {
+  background: #e3f2fd;
+  color: #1976d2;
+  font-weight: 600;
 }
 </style>

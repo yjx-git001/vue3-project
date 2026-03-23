@@ -215,6 +215,10 @@ func (s courseService) GetHotCourses(userID uint) ([]dto.CoursePageResp, error) 
 	return list, nil
 }
 
+func (s courseService) GetMyCourses(userID uint) ([]dto.MyCourseResp, error) {
+	return dao.CourseDao.GetMyCourses(db.Db, userID)
+}
+
 func (s courseService) GetSystemOptions() ([]dto.CourseSystemOption, error) {
 	return dao.CourseDao.GetSystemOptions(db.Db)
 }

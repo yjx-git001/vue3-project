@@ -88,6 +88,14 @@ type CourseSingleDetailResp struct {
 	Purchased            bool                                `json:"purchased"`
 }
 
+// 我的已购课程（用于模拟考试/考题训练列表）
+type MyCourseResp struct {
+	Ek             int64                 `json:"courseEk"`
+	CourseName     string                `json:"courseName"`
+	Image          string                `json:"courseImage"`
+	CourseCategory models.CourseCategory `json:"courseCategory"` // 1=单门 2=体系
+}
+
 // 创建体系课程请求
 type CourseSystemCreateReq struct {
 	CourseName         string                              `json:"courseName"`         // 课程名称

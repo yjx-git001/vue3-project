@@ -102,6 +102,18 @@ func (a CourseApi) GetHotCourses(c *gin.Context) {
 	a.OK(result, "ok")
 }
 
+func (a CourseApi) GetMyCourses(c *gin.Context) {
+	a.MakeContext(c)
+	userID := c.GetUint("userID")
+	result, err := services.CourseService.GetMyCourses(userID)
+	if err != nil {
+		logger.Sugar.Errorf("get my courses error: %s", err.Error())
+		a.ErrorApi(err)
+		return
+	}
+	a.OK(result, "ok")
+}
+
 func (a CourseApi) GetSystemOptions(c *gin.Context) {
 	a.MakeContext(c)
 

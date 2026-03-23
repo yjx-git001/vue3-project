@@ -16,7 +16,8 @@ func registerStudyRecordRouter(apiGroup *gin.RouterGroup) {
 
 	auth := apiGroup.Group("/api/study").Use(jwt.AuthMiddleware())
 	{
-		auth.POST("/record", studyApi.Add)    //添加学习记录
-		auth.GET("/stats", studyApi.GetStats) //获取学习统计数据
+		auth.POST("/record", studyApi.Add)              //添加学习记录
+		auth.GET("/stats", studyApi.GetStats)           //获取学习统计数据
+		auth.GET("/course_duration", studyApi.GetCourseDuration) //获取某课程学习时长
 	}
 }

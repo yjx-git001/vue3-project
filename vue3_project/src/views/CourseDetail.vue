@@ -159,7 +159,8 @@ onUnmounted(async () => {
   const duration = Math.floor((Date.now() - startTime) / 1000)
   if (duration < 1) return
   try {
-    await studyApi.addRecord(duration)
+    const ek = Number(route.params.id)
+    await studyApi.addRecord(duration, ek)
   } catch (e) {
     console.error('上报学时失败:', e)
   }

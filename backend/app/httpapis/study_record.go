@@ -45,3 +45,20 @@ func (a StudyRecordApi) GetStats(c *gin.Context) {
 
 	a.OK(result, "ok")
 }
+
+func (a StudyRecordApi) GetCourseDuration(c *gin.Context) {
+	var req dto.CourseDurationReq
+	if err := a.MakeContext(c).Bind(&req, binding.Query).Errors; err != nil {
+		logger.Sugar.Errorf("binding req data error: %s", err)
+		a.ErrorApi(err)
+		return
+	}
+	userID := c.GetUint("userID")
+	result, err := services.StudyRecordService.GetCourseDuration(userID, req.CourseEk)
+	if err != nil {
+		logger.Sugar.Errorf("get course duration error: %s", err.Error())
+		a.ErrorApi(err)
+		return
+	}
+	a.OK(result, "ok")
+}

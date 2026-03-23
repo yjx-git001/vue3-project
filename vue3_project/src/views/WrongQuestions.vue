@@ -6,40 +6,56 @@
         <svg viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
       </button>
       <span class="nav-title">错题记录</span>
+      <span class="nav-placeholder"></span>
     </header>
 
-    <main class="questions-content">
+    <!-- 加载中 -->
+    <div v-if="loading" class="loading-wrap">
+      <p>加载中...</p>
+    </div>
+
+    <!-- 空状态 -->
+    <div v-else-if="courseList.length === 0" class="empty-wrap">
+      <p>暂无错题记录</p>
+    </div>
+
+    <!-- 课程列表 -->
+    <main v-else class="questions-content">
       <div
-        v-for="course in questionsList"
-        :key="course.id"
+        v-for="course in courseList"
+        :key="course.courseEk"
         class="questions-card"
       >
         <div class="card-header">
-          <img src="/images/course-detail-banner.png" alt="课程图片" class="course-image" />
+          <img
+            :src="course.courseImage ? imageBaseUrl + course.courseImage : '/images/course-detail-banner.png'"
+            alt="课程图片"
+            class="course-image"
+          />
           <div class="course-info">
-            <h3 class="course-title">{{ course.title }}</h3>
+            <h3 class="course-title">{{ course.courseName }}</h3>
             <div class="question-stats">
               <div class="stat-row">
                 <div class="stat-item">
-                  <span class="stat-label">判断题数量：</span>
-                  <span class="stat-value">{{ course.judgeCount }}</span>
+                  <span class="stat-label">单选题：</span>
+                  <span class="stat-value">{{ course.singleCount }}</span>
                 </div>
                 <div class="stat-item">
-                  <span class="stat-label">单选题数量：</span>
-                  <span class="stat-value">{{ course.singleChoiceCount }}</span>
+                  <span class="stat-label">多选题：</span>
+                  <span class="stat-value">{{ course.multipleCount }}</span>
                 </div>
               </div>
               <div class="stat-row">
                 <div class="stat-item">
-                  <span class="stat-label">多选题数量：</span>
-                  <span class="stat-value">{{ course.multipleChoiceCount }}</span>
+                  <span class="stat-label">判断题：</span>
+                  <span class="stat-value">{{ course.judgeCount }}</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
         <div class="card-footer">
-          <button class="view-btn" @click="$router.push('/wrong_question_detail/' + course.id)">查看</button>
+          <button class="view-btn" @click="$router.push('/wrong_question_detail/' + course.courseEk)">查看</button>
         </div>
       </div>
     </main>
@@ -47,31 +63,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { mockExamApi } from '@/api'
 
-const questionsList = ref([
-  {
-    id: 1,
-    title: '港口特种设备检修课程',
-    judgeCount: 3,
-    singleChoiceCount: 2,
-    multipleChoiceCount: 3
-  },
-  {
-    id: 2,
-    title: '港口特种设备检修课程',
-    judgeCount: 3,
-    singleChoiceCount: 2,
-    multipleChoiceCount: 3
-  },
-  {
-    id: 3,
-    title: '港口特种设备检修课程',
-    judgeCount: 3,
-    singleChoiceCount: 2,
-    multipleChoiceCount: 3
+const imageBaseUrl = 'http://localhost:8080'
+const loading = ref(true)
+const courseList = ref<any[]>([])
+
+onMounted(async () => {
+  try {
+    const res: any = await mockExamApi.getWrongQuestionCourses()
+    courseList.value = res.data || []
+  } catch {
+    courseList.value = []
+  } finally {
+    loading.value = false
   }
-])
+})
 </script>
 
 <style scoped>
@@ -110,22 +118,18 @@ const questionsList = ref([
   text-align: center;
 }
 
-.nav-actions {
+.nav-placeholder {
+  width: 24px;
+}
+
+.loading-wrap,
+.empty-wrap {
   display: flex;
-  gap: 12px;
-}
-
-.icon-btn {
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-}
-
-.icon-btn svg {
-  width: 22px;
-  height: 22px;
-  fill: #666;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  color: #999;
+  font-size: 15px;
 }
 
 .questions-content {
