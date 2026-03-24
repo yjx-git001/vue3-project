@@ -20,7 +20,7 @@
             <h3 class="course-title">{{ course.title }}</h3>
             <div class="course-tags">
               <span class="tag">{{ course.tag }}</span>
-              <span class="hours">{{ course.hours }}课时</span>
+              <span class="hours">{{ course.hours }}</span>
             </div>
             <div class="progress-section">
               <div class="progress-bar">
@@ -44,40 +44,112 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import { courseApi, courseContentApi, questionApi, studyApi } from '@/api'
 
-const courseList = ref([
-  {
-    id: 1,
-    title: '港口特种设备检修课程',
-    tag: '体系课程',
-    hours: 48,
-    progress: 40,
-    studyTime: '34:09',
-    image: '/images/course-banner.png',
-    canDownload: false
-  },
-  {
-    id: 2,
-    title: '港口特种设备检修课程',
-    tag: '单门课程',
-    hours: 48,
-    progress: 100,
-    studyTime: '34:09',
-    image: '/images/course-banner.png',
-    canDownload: true
-  },
-  {
-    id: 3,
-    title: '港口特种设备检修课程',
-    tag: '体系课程',
-    hours: 48,
-    progress: 0,
-    studyTime: '',
-    image: '/images/course-banner.png',
-    canDownload: false
+const imageBaseUrl = 'http://localhost:8080'
+
+const courseList = ref<Array<{
+  id: number
+  title: string
+  tag: string
+  hours: string
+  progress: number
+  studyTime: string
+  image: string
+  canDownload: boolean
+}>>([])
+
+const parseVideoDurationToSeconds = (value: string) => {
+  if (!value) return 0
+  const text = String(value).trim()
+  if (!text) return 0
+
+  if (/^\d+$/.test(text)) return Number(text)
+
+  if (text.includes(':')) {
+    const parts = text.split(':').map(v => Number(v))
+    if (parts.some(v => Number.isNaN(v))) return 0
+    if (parts.length === 2) return parts[0] * 60 + parts[1]
+    if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2]
   }
-])
+
+  return 0
+}
+
+const formatSeconds = (seconds: number) => {
+  const total = Math.max(0, Math.floor(seconds))
+  const h = Math.floor(total / 3600)
+  const m = Math.floor((total % 3600) / 60)
+  const s = total % 60
+  if (h > 0) return `${h}小时${m}分${s}秒`
+  if (m > 0) return `${m}分${s}秒`
+  return `${s}秒`
+}
+
+onMounted(async () => {
+  const token = localStorage.getItem('token')
+  if (!token) {
+    courseList.value = []
+    return
+  }
+
+  try {
+    const coursesRes: any = await courseApi.getUserCourses()
+    const courses: any[] = coursesRes.data || []
+
+    const rows = await Promise.all(
+      courses.map(async (course: any) => {
+        const ek = Number(course.courseEk)
+        if (!Number.isFinite(ek)) return null
+
+        try {
+          const [questionRes, videoRes, durationRes]: any[] = await Promise.all([
+            questionApi.getList(ek),
+            courseContentApi.getVideos(ek),
+            studyApi.getCourseDuration(ek)
+          ])
+
+          const questions: any[] = questionRes.data || []
+          if (questions.length === 0) return null
+
+          const videos: Array<{ duration: string }> = videoRes.data || []
+          const totalSeconds = videos.reduce((sum, v) => sum + parseVideoDurationToSeconds(v.duration), 0)
+          const studySeconds = durationRes.data?.totalDuration || 0
+          const progress = totalSeconds > 0 ? Math.min(100, Math.round((studySeconds / totalSeconds) * 100)) : 0
+
+          const canDownload = totalSeconds > 0 && studySeconds >= totalSeconds
+
+          return {
+            id: ek,
+            title: course.courseName || '',
+            tag: Number(course.courseCategory) === 2 ? '体系课程' : '单门课程',
+            hours: course.courseTime ? `${course.courseTime}课时` : '0课时',
+            progress,
+            studyTime: studySeconds > 0 ? formatSeconds(studySeconds) : '',
+            image: course.courseImage ? imageBaseUrl + course.courseImage : '/images/course-banner.png',
+            canDownload
+          }
+        } catch {
+          return null
+        }
+      })
+    )
+
+    courseList.value = rows.filter(Boolean) as Array<{
+      id: number
+      title: string
+      tag: string
+      hours: string
+      progress: number
+      studyTime: string
+      image: string
+      canDownload: boolean
+    }>
+  } catch {
+    courseList.value = []
+  }
+})
 </script>
 
 <style scoped>

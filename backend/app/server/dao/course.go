@@ -210,7 +210,7 @@ func (d courseDao) GetMyCourses(tx *gorm.DB, userID uint) ([]dto.MyCourseResp, e
 
 	// 2. 查这些课程的基本信息
 	var courses []models.Course
-	if err := tx.Select("ek, course_name, image, course_category, parent_ek").
+	if err := tx.Select("ek, course_name, image, course_time, course_category, parent_ek").
 		Where("ek IN ? AND deleted_at IS NULL", paidEks).
 		Find(&courses).Error; err != nil {
 		return nil, err
@@ -226,7 +226,7 @@ func (d courseDao) GetMyCourses(tx *gorm.DB, userID uint) ([]dto.MyCourseResp, e
 
 	var children []models.Course
 	if len(systemEks) > 0 {
-		if err := tx.Select("ek, course_name, image, course_category, parent_ek").
+		if err := tx.Select("ek, course_name, image, course_time, course_category, parent_ek").
 			Where("parent_ek IN ? AND course_category = ? AND deleted_at IS NULL",
 				systemEks, models.CourseCategorySingle).
 			Find(&children).Error; err != nil {
@@ -238,7 +238,7 @@ func (d courseDao) GetMyCourses(tx *gorm.DB, userID uint) ([]dto.MyCourseResp, e
 	seen := make(map[int64]struct{})
 	result := make([]dto.MyCourseResp, 0, len(courses)+len(children))
 
-	addCourse := func(ek int64, name, image string, category models.CourseCategory) {
+	addCourse := func(ek int64, name, image string, courseTime int, category models.CourseCategory) {
 		if _, ok := seen[ek]; ok {
 			return
 		}
@@ -247,15 +247,16 @@ func (d courseDao) GetMyCourses(tx *gorm.DB, userID uint) ([]dto.MyCourseResp, e
 			Ek:             ek,
 			CourseName:     name,
 			Image:          image,
+			CourseTime:     courseTime,
 			CourseCategory: category,
 		})
 	}
 
 	for _, c := range courses {
-		addCourse(c.Ek, c.CourseName, c.Image, c.CourseCategory)
+		addCourse(c.Ek, c.CourseName, c.Image, c.CourseTime, c.CourseCategory)
 	}
 	for _, c := range children {
-		addCourse(c.Ek, c.CourseName, c.Image, c.CourseCategory)
+		addCourse(c.Ek, c.CourseName, c.Image, c.CourseTime, c.CourseCategory)
 	}
 
 	return result, nil

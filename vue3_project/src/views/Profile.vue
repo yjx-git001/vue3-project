@@ -34,7 +34,7 @@
           </div>
           <div class="stat-divider"></div>
           <div class="stat-item">
-            <div class="stat-value">4</div>
+            <div class="stat-value">{{ certificateCount }}</div>
             <div class="stat-label">获取证书</div>
           </div>
         </div>
@@ -114,7 +114,7 @@
           >
             <div class="course-image-wrapper">
               <img :src="course.image" :alt="course.title" class="course-image" />
-              <span :class="['course-tag', course.tag === '热门课程' ? 'course-tag--hot' : 'course-tag--system']">{{ course.tag }}</span>
+              <span :class="['course-tag', course.tag === '单门课程' ? 'course-tag--single' : 'course-tag--system']">{{ course.tag }}</span>
             </div>
             <div class="course-info">
               <h4 class="course-title">{{ course.title }}</h4>
@@ -144,12 +144,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { studyApi } from '@/api'
+import { courseApi, mockExamApi, studyApi } from '@/api'
 
 const userInfo = ref({ id: '', nickname: '', phone: '', avatar: '', createdAt: '' })
 const imageBaseUrl = 'http://localhost:8080'
 const todayDuration = ref(0)
 const totalDuration = ref(0)
+const certificateCount = ref(0)
 
 function formatHours(seconds: number) {
   const h = seconds / 3600
@@ -162,27 +163,59 @@ onMounted(async () => {
   const token = localStorage.getItem('token')
   if (token) {
     try {
-      const res: any = await studyApi.getStats()
-      todayDuration.value = res.data?.todayDuration || 0
-      totalDuration.value = res.data?.totalDuration || 0
+      const [studyRes, coursesRes]: any[] = await Promise.all([
+        studyApi.getStats(),
+        courseApi.getUserCourses()
+      ])
+      todayDuration.value = studyRes.data?.todayDuration || 0
+      totalDuration.value = studyRes.data?.totalDuration || 0
+
+      const courses: any[] = coursesRes.data || []
+      const rows = await Promise.all(
+        courses.map(async (course: any) => {
+          const ek = Number(course.courseEk)
+          if (!Number.isFinite(ek)) return { qualified: false, duration: 0, course }
+          try {
+            const [statsRes, durRes]: any[] = await Promise.all([
+              mockExamApi.getStats(ek),
+              studyApi.getCourseDuration(ek)
+            ])
+            const highestScore = statsRes.data?.highestScore || 0
+            const mockCount = statsRes.data?.mockCount || 0
+            const totalDurationSec = durRes.data?.totalDuration || 0
+            return {
+              qualified: totalDurationSec >= 180 && mockCount > 0 && highestScore >= 60,
+              duration: totalDurationSec,
+              course
+            }
+          } catch {
+            return { qualified: false, duration: 0, course }
+          }
+        })
+      )
+
+      certificateCount.value = rows.filter(r => r.qualified).length
+
+      const topCourses = rows
+        .sort((a, b) => b.duration - a.duration)
+        .slice(0, 2)
+        .map(({ course }) => ({
+          id: Number(course.courseEk),
+          title: course.courseName || '',
+          tag: Number(course.courseCategory) === 2 ? '体系课程' : '单门课程',
+          image: course.courseImage ? imageBaseUrl + course.courseImage : '/images/course-banner.png'
+        }))
+      recommendCourses.value = topCourses
     } catch (e) {}
   }
 })
 
-const recommendCourses = ref([
-  {
-    id: 1,
-    title: '港口特种设备检修课程',
-    tag: '体系课程',
-    image: '/images/course-banner.png'
-  },
-  {
-    id: 2,
-    title: '港口特种设备检修课程',
-    tag: '热门课程',
-    image: '/images/course-banner.png'
-  }
-])
+const recommendCourses = ref<Array<{
+  id: number
+  title: string
+  tag: string
+  image: string
+}>>([])
 </script>
 
 <style scoped>
@@ -482,9 +515,9 @@ const recommendCourses = ref([
   color: #3b82f6;
 }
 
-.course-tag--hot {
+.course-tag--single {
   background-color: rgba(255,255,255,0.8);
-  color: #ff6b35;
+  color: #3b82f6;
 }
 
 .course-info {

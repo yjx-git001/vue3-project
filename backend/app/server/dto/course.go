@@ -93,6 +93,7 @@ type MyCourseResp struct {
 	Ek             int64                 `json:"courseEk"`
 	CourseName     string                `json:"courseName"`
 	Image          string                `json:"courseImage"`
+	CourseTime     int                   `json:"courseTime"`
 	CourseCategory models.CourseCategory `json:"courseCategory"` // 1=单门 2=体系
 }
 

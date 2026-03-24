@@ -160,7 +160,7 @@
           <svg viewBox="0 0 24 24"><path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,17H7V15H17V17M17,13H7V11H17V13M17,9H7V7H17V9Z" /></svg>
           <span>答题卡</span>
         </button>
-        <button class="nav-btn next" @click="nextQuestion" :disabled="currentIndex === questions.length - 1">
+        <button class="nav-btn next" @click="nextQuestion" :disabled="!canGoNext()">
           <svg viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
         </button>
       </footer>
@@ -255,6 +255,26 @@ const totalAnswered = computed(() =>
 )
 
 // 选择答案（单选/判断）
+const autoNextAfterAnswer = () => {
+  if (currentIndex.value < questions.value.length - 1) {
+    nextQuestion()
+    return
+  }
+
+  const tabs = questionTypeTabs.value
+  const idx = tabs.findIndex(t => t.type === activeType.value)
+  if (idx >= 0 && idx < tabs.length - 1) {
+    const nextTab = tabs[idx + 1]
+    if (!nextTab) return
+    activeType.value = nextTab.type
+    currentIndex.value = 0
+    const rec = typeAnswers.value[activeType.value]?.[0]
+    const correctAns: string = (questions.value[0] as any)?.answer ?? ''
+    answerResult.value = rec !== undefined ? rec === correctAns : null
+    multiSelected.value = rec ? rec.split('') : []
+  }
+}
+
 const selectAnswer = (key: string) => {
   if (answerResult.value !== null) return  // 已答过，不能再选
   if (activeType.value === 2) {
@@ -267,10 +287,13 @@ const selectAnswer = (key: string) => {
     }
     return
   }
-  // 单选/判断：立即判断
+  // 单选/判断：先显示解析，1秒后自动跳下一题/题型
   const correct = (currentQuestion.value as any).answer
   ;(typeAnswers.value[activeType.value] as Record<number, string>)[currentIndex.value] = key
   answerResult.value = key === correct
+  setTimeout(() => {
+    autoNextAfterAnswer()
+  }, 1000)
 }
 
 // 多选提交
@@ -279,6 +302,9 @@ const submitMultiple = () => {
   const correct = (currentQuestion.value as any).answer
   ;(typeAnswers.value[activeType.value] as Record<number, string>)[currentIndex.value] = userAnswer
   answerResult.value = userAnswer === correct
+  setTimeout(() => {
+    autoNextAfterAnswer()
+  }, 1000)
 }
 
 // 选项样式
@@ -315,11 +341,36 @@ const previousQuestion = () => {
   }
 }
 
+const hasNextType = computed(() => {
+  const types = questionTypeTabs.value.map(t => t.type)
+  const idx = types.indexOf(activeType.value)
+  return idx >= 0 && idx < types.length - 1
+})
+
+function canGoNext() {
+  if (currentIndex.value < questions.value.length - 1) return true
+  return hasNextType.value
+}
+
 const nextQuestion = () => {
   if (currentIndex.value < questions.value.length - 1) {
     currentIndex.value++
     const rec = typeAnswers.value[activeType.value]?.[currentIndex.value]
     const correctAns: string = (questions.value[currentIndex.value] as any)?.answer ?? ''
+    answerResult.value = rec !== undefined ? rec === correctAns : null
+    multiSelected.value = rec ? rec.split('') : []
+    return
+  }
+
+  const tabs = questionTypeTabs.value
+  const idx = tabs.findIndex(t => t.type === activeType.value)
+  if (idx >= 0 && idx < tabs.length - 1) {
+    const nextTab = tabs[idx + 1]
+    if (!nextTab) return
+    activeType.value = nextTab.type
+    currentIndex.value = 0
+    const rec = typeAnswers.value[activeType.value]?.[0]
+    const correctAns: string = (questions.value[0] as any)?.answer ?? ''
     answerResult.value = rec !== undefined ? rec === correctAns : null
     multiSelected.value = rec ? rec.split('') : []
   }

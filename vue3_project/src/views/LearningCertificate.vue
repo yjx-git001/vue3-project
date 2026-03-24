@@ -11,15 +11,24 @@
     <!-- 提示信息 -->
     <div class="notice-banner">
       <svg viewBox="0 0 24 24" class="notice-icon">
-        <path d="M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" />
+        <circle cx="12" cy="12" r="9.25" />
+        <path d="M8 12.4L10.55 14.95L16.1 9.4" />
       </svg>
       <span>完成学习后可下载学时证明</span>
     </div>
 
-    <main class="certificate-content">
+    <div v-if="loading" class="loading-wrap">
+      <p>加载中...</p>
+    </div>
+
+    <div v-else-if="certificateList.length === 0" class="empty-wrap">
+      <p>暂无符合条件的课程</p>
+    </div>
+
+    <main v-else class="certificate-content">
       <div
         v-for="course in certificateList"
-        :key="course.id"
+        :key="course.courseEk"
         class="certificate-card"
       >
         <div class="card-content">
@@ -39,7 +48,7 @@
         <div class="button-wrapper">
           <button
             class="download-btn"
-            @click="$router.push('/certificate_detail/' + course.id)"
+            @click="$router.push('/certificate_detail/' + course.courseEk)"
           >
             下载学时证明
           </button>
@@ -50,18 +59,79 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { courseApi, mockExamApi, studyApi } from '@/api'
 
-const certificateList = ref([
-  {
-    id: 1,
-    courseName: '港口特种设备检修课程',
-    mockCount: 3,
-    studyTime: '23:08',
-    highestScore: 100,
-    image: '/images/course-detail-banner.png'
+const imageBaseUrl = 'http://localhost:8080'
+const loading = ref(true)
+const certificateList = ref<Array<{
+  courseEk: number
+  courseName: string
+  mockCount: number
+  studyTime: string
+  highestScore: number
+  image: string
+}>>([])
+
+const formatDuration = (seconds: number) => {
+  const total = Math.max(0, Math.floor(seconds))
+  const m = Math.floor(total / 60)
+  const s = total % 60
+  return `${m}:${s.toString().padStart(2, '0')}`
+}
+
+onMounted(async () => {
+  try {
+    const res: any = await courseApi.getUserCourses()
+    const courses: any[] = res.data || []
+
+    const rows = await Promise.all(
+      courses.map(async (course: any) => {
+        const courseEk = Number(course.courseEk)
+        let mockCount = 0
+        let highestScore = 0
+        let totalDuration = 0
+
+        try {
+          const statsRes: any = await mockExamApi.getStats(courseEk)
+          mockCount = statsRes.data?.mockCount || 0
+          highestScore = statsRes.data?.highestScore || 0
+        } catch {}
+
+        try {
+          const durRes: any = await studyApi.getCourseDuration(courseEk)
+          totalDuration = durRes.data?.totalDuration || 0
+        } catch {}
+
+        if (totalDuration < 180) return null
+        if (mockCount <= 0) return null
+        if (highestScore < 60) return null
+
+        return {
+          courseEk,
+          courseName: course.courseName || '',
+          mockCount,
+          studyTime: formatDuration(totalDuration),
+          highestScore,
+          image: course.courseImage ? imageBaseUrl + course.courseImage : '/images/course-detail-banner.png'
+        }
+      })
+    )
+
+    certificateList.value = rows.filter(Boolean) as Array<{
+      courseEk: number
+      courseName: string
+      mockCount: number
+      studyTime: string
+      highestScore: number
+      image: string
+    }>
+  } catch {
+    certificateList.value = []
+  } finally {
+    loading.value = false
   }
-])
+})
 </script>
 
 <style scoped>
@@ -101,24 +171,41 @@ const certificateList = ref([
 }
 
 .notice-banner {
-  background-color: #fff3e0;
-  padding: 12px 16px;
+  background-color: #fff1e5;
+  padding: 10px 16px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: #ff9800;
-  font-size: 14px;
+  gap: 6px;
+  color: #f28a1e;
+  font-size: 15px;
+  line-height: 1.2;
+  margin-top: 8px;
+  margin-bottom: 8px;
 }
 
 .notice-icon {
-  width: 18px;
-  height: 18px;
-  fill: currentColor;
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
   flex-shrink: 0;
 }
 
+.loading-wrap,
+.empty-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  color: #999;
+  font-size: 15px;
+}
+
 .certificate-content {
-  padding: 16px;
+  padding: 0 16px 16px;
 }
 
 .certificate-card {
@@ -183,6 +270,9 @@ const certificateList = ref([
 .button-wrapper {
   display: flex;
   justify-content: flex-end;
+  border-top: 1px solid #f0f0f0;
+  margin-top: 12px;
+  padding-top: 12px;
 }
 
 .download-btn {
@@ -194,5 +284,9 @@ const certificateList = ref([
   font-size: 15px;
   font-weight: 500;
   cursor: pointer;
+  box-shadow: none;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
 }
 </style>

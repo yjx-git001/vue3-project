@@ -1066,12 +1066,18 @@ const fetchQuestionList = async (resetTab = false) => {
       })
       videoMinutes.value = Array.from({ length: videoCount }, (_, i) => {
         const found = saved.find(v => v.sort === i + 1)
-        if (found?.duration) return found.duration.split(':')[0].replace(/^0/, '') || '0'
+        if (found?.duration) {
+          const [mm = ''] = found.duration.split(':')
+          return mm.replace(/^0/, '') || '0'
+        }
         return ''
       })
       videoSeconds.value = Array.from({ length: videoCount }, (_, i) => {
         const found = saved.find(v => v.sort === i + 1)
-        if (found?.duration) return found.duration.split(':')[1]?.replace(/^0/, '') || '0'
+        if (found?.duration) {
+          const [, ss = ''] = found.duration.split(':')
+          return ss.replace(/^0/, '') || '0'
+        }
         return ''
       })
     } catch {

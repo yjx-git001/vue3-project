@@ -133,7 +133,12 @@
       <main class="exam-content">
         <!-- 题目卡片 -->
         <div class="question-card">
-          <span class="question-type-label">{{ typeLabel }}</span>
+          <div class="question-card-header">
+            <span class="question-type-label">{{ typeLabel }}</span>
+            <div v-if="answerResult !== null" class="status-badge" :class="answerResult ? 'correct' : 'error'">
+              {{ answerResult ? '正确' : '错误' }}
+            </div>
+          </div>
           <p class="question-text">{{ currentIndex + 1 }}. {{ currentQuestion.content }}</p>
         </div>
 
@@ -270,6 +275,9 @@ const showAnswerCard = ref(false)
 const answers = ref<Record<number, string>>({})
 // 多选临时选项
 const multiSelected = ref<string[]>([])
+// 当前题目答题结果
+const answerResult = ref<boolean | null>(null)
+let autoNextTimer: ReturnType<typeof setTimeout> | null = null
 
 // 倒计时：30分钟 = 1800秒
 const timeLeft = ref(1800)
@@ -310,7 +318,24 @@ const isSelected = (key: string) => {
   return answers.value[currentIndex.value] === key
 }
 
+const clearAutoNextTimer = () => {
+  if (autoNextTimer !== null) {
+    clearTimeout(autoNextTimer)
+    autoNextTimer = null
+  }
+}
+
+const scheduleAutoNext = () => {
+  clearAutoNextTimer()
+  autoNextTimer = setTimeout(() => {
+    if (currentIndex.value < questions.value.length - 1) {
+      nextQuestion()
+    }
+  }, 1000)
+}
+
 const selectAnswer = (key: string) => {
+  if (answerResult.value !== null) return
   if (currentQuestion.value.questionType === 2) {
     // 多选：toggle
     const idx = multiSelected.value.indexOf(key)
@@ -318,37 +343,50 @@ const selectAnswer = (key: string) => {
     else multiSelected.value.push(key)
     return
   }
-  // 单选/判断：直接记录
+  // 单选/判断：显示解析后自动下一题
+  const correct = String(currentQuestion.value.answer || '')
   answers.value[currentIndex.value] = key
+  answerResult.value = key === correct
+  scheduleAutoNext()
 }
 
 const submitMultiple = () => {
-  answers.value[currentIndex.value] = multiSelected.value.sort().join('')
-  multiSelected.value = []
+  if (answerResult.value !== null || multiSelected.value.length === 0) return
+  const userAnswer = multiSelected.value.slice().sort().join('')
+  const correct = String(currentQuestion.value.answer || '')
+  answers.value[currentIndex.value] = userAnswer
+  multiSelected.value = userAnswer.split('')
+  answerResult.value = userAnswer === correct
+  scheduleAutoNext()
 }
 
 const previousQuestion = () => {
   if (currentIndex.value > 0) {
+    clearAutoNextTimer()
     currentIndex.value--
-    syncMultiSelected()
+    syncCurrentQuestionState()
   }
 }
 
 const nextQuestion = () => {
   if (currentIndex.value < questions.value.length - 1) {
+    clearAutoNextTimer()
     currentIndex.value++
-    syncMultiSelected()
+    syncCurrentQuestionState()
   }
 }
 
 const goToQuestion = (idx: number) => {
+  clearAutoNextTimer()
   currentIndex.value = idx
-  syncMultiSelected()
+  syncCurrentQuestionState()
   showAnswerCard.value = false
 }
 
-const syncMultiSelected = () => {
+const syncCurrentQuestionState = () => {
   const rec = answers.value[currentIndex.value]
+  const correct = String(currentQuestion.value.answer || '')
+  answerResult.value = rec !== undefined ? rec === correct : null
   if (currentQuestion.value.questionType === 2 && rec) {
     multiSelected.value = rec.split('')
   } else {
@@ -393,8 +431,10 @@ const getOptions = (q: any) => {
 // 继续考试：重置所有状态重新抽题
 const retryExam = async () => {
   submitted.value = false
+  clearAutoNextTimer()
   answers.value = {}
   multiSelected.value = []
+  answerResult.value = null
   currentIndex.value = 0
   timeLeft.value = 1800
   try {
@@ -409,15 +449,20 @@ const retryExam = async () => {
     const multiples = shuffle(allPool.filter(q => q.questionType === 2)).slice(0, cfg.multipleCount)
     const judges = shuffle(allPool.filter(q => q.questionType === 3)).slice(0, cfg.judgeCount)
     questions.value = [...singles, ...multiples, ...judges]
-    if (questions.value.length > 0) startTimer()
+    if (questions.value.length > 0) {
+      syncCurrentQuestionState()
+      startTimer()
+    }
   } catch {
     questions.value = []
   }
 }
 
 const clearAnswers = () => {
+  clearAutoNextTimer()
   answers.value = {}
   multiSelected.value = []
+  answerResult.value = null
 }
 
 const doSubmit = async () => {
@@ -500,7 +545,10 @@ onMounted(async () => {
     const judges = shuffle(allPool.filter(q => q.questionType === 3)).slice(0, cfg.judgeCount)
     questions.value = [...singles, ...multiples, ...judges]
 
-    if (questions.value.length > 0) startTimer()
+    if (questions.value.length > 0) {
+      syncCurrentQuestionState()
+      startTimer()
+    }
   } catch {
     questions.value = []
   } finally {
@@ -631,9 +679,9 @@ onUnmounted(async () => {
   box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 .question-type-label {
-  font-size: 13px;
-  font-weight: 400;
-  color: #999;
+  font-size: 14px;
+  font-weight: 600;
+  color: #3b82f6;
   display: block;
   margin-bottom: 12px;
 }
@@ -847,7 +895,7 @@ onUnmounted(async () => {
   width: 100%;
   aspect-ratio: 1;
   border: none;
-  border-radius: 50%;
+  border-radius: 10px;
   background-color: #f5f5f5;
   color: #333;
   font-size: 14px;

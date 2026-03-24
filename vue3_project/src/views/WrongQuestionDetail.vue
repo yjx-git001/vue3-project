@@ -17,6 +17,7 @@
 
     <template v-else>
       <main class="detail-content">
+        <div class="header-section">
         <!-- 课程名称 -->
         <div class="course-name">{{ courseName }}</div>
 
@@ -33,6 +34,7 @@
         </div>
 
         <!-- 题目内容 -->
+        </div>
         <div class="question-card">
           <div class="question-header">
             <span class="question-type">{{ typeLabel }}</span>
@@ -95,7 +97,7 @@
             <button
               v-for="(_, idx) in currentTypeQuestions"
               :key="idx"
-              :class="['question-number', { current: currentIndex === idx }]"
+              :class="['question-number', 'answered', { current: currentIndex === idx }]"
               @click="goTo(idx)"
             >
               {{ idx + 1 }}
@@ -200,7 +202,6 @@ onMounted(async () => {
   align-items: center;
   padding: 12px 16px;
   background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .back-btn {
@@ -236,7 +237,13 @@ onMounted(async () => {
 }
 
 .detail-content {
-  padding: 15px;
+  padding: 0 15px 15px;
+}
+
+.header-section {
+  background-color: #fff;
+  margin: 0 -15px 12px;
+  padding: 8px 15px 0;
 }
 
 .course-name {
@@ -290,8 +297,9 @@ onMounted(async () => {
 }
 
 .question-type {
-  font-size: 13px;
-  color: #999;
+  font-size: 14px;
+  font-weight: 600;
+  color: #3b82f6;
 }
 
 .question-status.error {
@@ -388,7 +396,6 @@ onMounted(async () => {
   align-items: center;
   padding: 12px 20px;
   background-color: #fff;
-  border-top: 1px solid #eee;
 }
 
 .nav-btn {
@@ -444,7 +451,8 @@ onMounted(async () => {
   border-radius: 20px 20px 0 0;
   padding: 20px;
   width: 100%;
-  max-height: 80vh;
+  height: 85vh;
+  max-height: 85vh;
   overflow-y: auto;
 }
 
@@ -466,12 +474,19 @@ onMounted(async () => {
   width: 100%;
   aspect-ratio: 1;
   border: none;
-  border-radius: 50%;
-  background-color: #ffe4e6;
-  color: #ff4d4f;
+  border-radius: 10px;
+  background-color: #f5f5f5;
+  color: #333;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
+  transition: all 0.2s;
+}
+
+.question-number.answered {
+  background-color: #e3f2fd;
+  color: #3b82f6;
+  font-weight: 600;
 }
 
 .question-number.current {

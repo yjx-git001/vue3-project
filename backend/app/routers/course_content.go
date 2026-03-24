@@ -2,6 +2,7 @@ package routers
 
 import (
 	"backend/app/httpapis"
+	"backend/pkg/jwt"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,7 +22,7 @@ func registerCourseContentRouter(apiGroup *gin.RouterGroup) {
 		questions.DELETE("/delete", api.DeleteQuestion)
 	}
 
-	// 课程内容（视频、附件、笔记）
+	// 课程内容（视频、附件、笔记、配置）
 	content := apiGroup.Group("/api/course_content")
 	{
 		content.GET("/videos", api.GetVideos)
@@ -32,10 +33,15 @@ func registerCourseContentRouter(apiGroup *gin.RouterGroup) {
 		content.POST("/notes", api.SaveNotes)
 		content.GET("/mock_exam_config", api.GetMockExamConfig)
 		content.POST("/mock_exam_config", api.SaveMockExamConfig)
-		content.POST("/mock_exam_record", api.SaveMockExamRecord)
-		content.GET("/mock_exam_stats", api.GetMockExamStats)
-		content.POST("/wrong_questions", api.SaveWrongQuestions)
-		content.GET("/wrong_questions/courses", api.GetWrongQuestionCourseList)
-		content.GET("/wrong_questions/list", api.GetWrongQuestionList)
+	}
+
+	// 用户态课程内容（需要登录）
+	contentAuth := apiGroup.Group("/api/course_content").Use(jwt.AuthMiddleware())
+	{
+		contentAuth.POST("/mock_exam_record", api.SaveMockExamRecord)
+		contentAuth.GET("/mock_exam_stats", api.GetMockExamStats)
+		contentAuth.POST("/wrong_questions", api.SaveWrongQuestions)
+		contentAuth.GET("/wrong_questions/courses", api.GetWrongQuestionCourseList)
+		contentAuth.GET("/wrong_questions/list", api.GetWrongQuestionList)
 	}
 }

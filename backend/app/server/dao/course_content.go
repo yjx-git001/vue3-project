@@ -2,6 +2,8 @@ package dao
 
 import (
 	"backend/app/models"
+	"errors"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -171,6 +173,24 @@ func (d mockExamRecordDao) GetStats(tx *gorm.DB, userID uint, courseEk int64) (m
 	}
 	highestScore = maxScore.MaxScore
 	return
+}
+
+func (d mockExamRecordDao) GetFirstPassDate(tx *gorm.DB, userID uint, courseEk int64, minScore int) (*time.Time, error) {
+	var record models.MockExamRecord
+	err := tx.Model(&models.MockExamRecord{}).
+		Where("user_id = ? AND course_ek = ? AND score >= ? AND deleted_at IS NULL", userID, courseEk, minScore).
+		Order("created_at ASC").
+		First(&record).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	if record.CreatedAt == nil {
+		return nil, nil
+	}
+	return record.CreatedAt, nil
 }
 
 // ===== 错题记录 DAO =====

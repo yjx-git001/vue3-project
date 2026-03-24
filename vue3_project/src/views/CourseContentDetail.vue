@@ -350,7 +350,8 @@ onMounted(async () => {
     const defaultEk = isSystem && subCourses.length > 0 ? subCourses[0].ek : ek
     await fetchExamQuestions(defaultEk)
     if (lessons.value.length > 0) {
-      selectedLessonId.value = lessons.value[0].id
+      const firstLesson = lessons.value[0]
+      if (firstLesson) selectedLessonId.value = firstLesson.id
     }
   }
 })

@@ -128,7 +128,7 @@ export const certificateApi = {
   getCertificates() {
     return request.get('/certificates')
   },
-  getCertificateDetail(id: number) {
+  getCertificateDetail(id: number | string) {
     return request.get(`/certificates/${id}`)
   }
 }
