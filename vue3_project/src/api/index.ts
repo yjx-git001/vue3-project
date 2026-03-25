@@ -13,6 +13,9 @@ export const userApi = {
   },
   updateProfile(data: { nickname?: string; name?: string; city?: string; organization?: string; company?: string; language?: string; avatar?: string }) {
     return request.put('/user/profile', data)
+  },
+  getAdminUserOptions(keyword?: string) {
+    return request.get('/admin/users/options', { params: { keyword } })
   }
 }
 
@@ -203,6 +206,16 @@ export const cardKeyApi = {
   },
   getList() {
     return request.get('/admin/cardkey/list')
+  }
+}
+
+// 优惠卡券管理接口
+export const couponAdminApi = {
+  issue(data: { count: number; amount: number; title?: string; couponType?: string; validUntil: string; userId: number }) {
+    return request.post('/admin/coupons/issue', data)
+  },
+  getList() {
+    return request.get('/admin/coupons/list')
   }
 }
 

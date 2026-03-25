@@ -3,6 +3,7 @@ package dao
 import (
 	"backend/app/models"
 	"backend/pkg/db"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -34,4 +35,24 @@ func (d userDao) Create(tx *gorm.DB, data *models.User) error {
 		tx = db.Db
 	}
 	return tx.Debug().Create(data).Error
+}
+
+func (d userDao) ListOptions(tx *gorm.DB, keyword string, limit int) ([]models.User, error) {
+	if tx == nil {
+		tx = db.Db
+	}
+	if limit <= 0 || limit > 200 {
+		limit = 100
+	}
+
+	query := tx.Debug().Select("id, name, nickname, phone").Order("id DESC").Limit(limit)
+	kw := strings.TrimSpace(keyword)
+	if kw != "" {
+		like := "%" + kw + "%"
+		query = query.Where("name LIKE ? OR nickname LIKE ? OR phone LIKE ?", like, like, like)
+	}
+
+	var list []models.User
+	err := query.Find(&list).Error
+	return list, err
 }

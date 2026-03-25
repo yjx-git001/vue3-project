@@ -39,3 +39,9 @@ type UserInfoResp struct {
 	Language     string `json:"language"`
 	CreatedAt    string `json:"createdAt"`
 }
+
+type AdminUserOptionResp struct {
+	ID    uint   `json:"id"`
+	Name  string `json:"name"`
+	Phone string `json:"phone"`
+}

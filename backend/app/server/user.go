@@ -7,6 +7,7 @@ import (
 	"backend/pkg/db"
 	"backend/pkg/jwt"
 	"errors"
+	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -97,6 +98,29 @@ func (s userService) UpdateProfile(userID uint, req *dto.UpdateProfileReq) error
 		"language":     req.Language,
 		"avatar":       req.Avatar,
 	}).Error
+}
+
+func (s userService) ListAdminOptions(keyword string) ([]dto.AdminUserOptionResp, error) {
+	users, err := dao.UserDao.ListOptions(db.Db, keyword, 100)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]dto.AdminUserOptionResp, 0, len(users))
+	for _, u := range users {
+		name := strings.TrimSpace(u.Name)
+		if name == "" {
+			name = strings.TrimSpace(u.Nickname)
+		}
+		if name == "" {
+			name = u.Phone
+		}
+		result = append(result, dto.AdminUserOptionResp{
+			ID:    u.ID,
+			Name:  name,
+			Phone: u.Phone,
+		})
+	}
+	return result, nil
 }
 
 func toUserInfoResp(user models.User) dto.UserInfoResp {

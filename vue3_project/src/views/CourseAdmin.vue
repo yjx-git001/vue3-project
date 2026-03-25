@@ -556,9 +556,97 @@
       </template>
     </section>
 
+    <!-- 优惠卡券管理 -->
+    <section v-show="activeTab === 'coupon'" class="admin-section">
+      <h2>优惠卡券管理</h2>
+      <div class="form-group">
+        <label>发放数量：</label>
+        <input v-model.number="couponIssueForm.count" type="number" min="1" max="100" placeholder="1-100" />
+      </div>
+      <div class="form-group">
+        <label>优惠金额（元）：</label>
+        <input v-model.number="couponIssueForm.amount" type="number" min="1" placeholder="如 20" />
+      </div>
+      <div class="form-group">
+        <label>卡券标题：</label>
+        <input v-model.trim="couponIssueForm.title" type="text" placeholder="默认：学习卡兑换" />
+      </div>
+      <div class="form-group">
+        <label>卡券类型：</label>
+        <input v-model.trim="couponIssueForm.couponType" type="text" placeholder="默认：单门课程" />
+      </div>
+      <div class="form-group">
+        <label>有效期：</label>
+        <input v-model="couponIssueForm.validUntil" type="date" />
+      </div>
+      <div class="form-group">
+        <label>指定用户：</label>
+        <div class="user-select-combobox">
+          <input
+            v-model.trim="couponUserKeyword"
+            type="text"
+            placeholder="搜索并选择用户（必填）"
+            @focus="handleCouponUserFocus"
+            @blur="handleCouponUserBlur"
+            @input="handleCouponUserInput"
+          />
+          <div v-if="showCouponUserDropdown" class="user-dropdown">
+            <div
+              v-for="u in couponUserOptions"
+              :key="u.id"
+              class="user-option"
+              @mousedown.prevent="selectCouponUser(u)"
+            >
+              {{ formatCouponUserOption(u) }}
+            </div>
+            <div v-if="couponUserOptions.length === 0" class="user-option user-option-empty">
+              未找到匹配用户
+            </div>
+          </div>
+        </div>
+        <div class="issue-tip">指定用户为必填，可通过姓名或手机号搜索后选择</div>
+      </div>
+      <button @click="handleIssueCoupons" :disabled="couponLoading">
+        {{ couponLoading ? '发放中...' : '发放优惠卡券' }}
+      </button>
+
+      <div v-if="couponMessage" class="message" :class="couponMessage.type">{{ couponMessage.text }}</div>
+
+      <table v-if="couponList.length" class="coupon-table">
+        <thead>
+          <tr>
+            <th>卡券码</th>
+            <th>金额(元)</th>
+            <th>标题</th>
+            <th>类型</th>
+            <th>有效期</th>
+            <th>用户ID</th>
+            <th>用户</th>
+            <th>手机号</th>
+            <th>状态</th>
+            <th>发放时间</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="c in couponList" :key="c.id">
+            <td class="code-cell">{{ c.code }}</td>
+            <td>{{ c.amount }}</td>
+            <td>{{ c.title }}</td>
+            <td>{{ c.couponType }}</td>
+            <td>{{ c.validUntil }}</td>
+            <td>{{ c.userId }}</td>
+            <td>{{ c.userName || '-' }}</td>
+            <td>{{ c.userPhone || '-' }}</td>
+            <td>{{ c.statusStr }}</td>
+            <td>{{ c.createdAt }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
     <!-- 卡密管理 -->
     <section v-show="activeTab === 'cardkey'" class="admin-section">
-      <h2>卡密管理</h2>
+      <h2>卡密管理（用于卡密支付）</h2>
       <div class="form-group">
         <label>生成数量：</label>
         <input v-model.number="cardKeyCount" type="number" min="1" max="100" placeholder="1-100" />
@@ -600,7 +688,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { courseAdminApi, uploadApi, bannerAdminApi, flashSaleAdminApi, courseApi, cardKeyApi, questionApi, courseContentApi, mockExamApi } from '@/api'
+import { courseAdminApi, uploadApi, bannerAdminApi, flashSaleAdminApi, courseApi, cardKeyApi, couponAdminApi, userApi, questionApi, courseContentApi, mockExamApi } from '@/api'
 
 // ===== 页面级竖排 Tab =====
 const activeTab = ref('banner')
@@ -610,6 +698,7 @@ const adminTabs = [
   { key: 'system',    icon: '📚', label: '体系课程' },
   { key: 'single',    icon: '📖', label: '单门课程' },
   { key: 'question',  icon: '📝', label: '题目配置' },
+  { key: 'coupon',    icon: '🎟️', label: '优惠卡券' },
   { key: 'cardkey',   icon: '🔑', label: '卡密管理' },
 ]
 
@@ -1286,6 +1375,105 @@ const handleGenerateCardKeys = async () => {
   }
 }
 
+// 优惠卡券管理
+const couponLoading = ref(false)
+const couponMessage = ref<{ type: string; text: string } | null>(null)
+const couponList = ref<any[]>([])
+const couponUserKeyword = ref('')
+const couponUserOptions = ref<Array<{ id: number; name: string; phone: string }>>([])
+const showCouponUserDropdown = ref(false)
+const couponIssueForm = ref({
+  count: 1,
+  amount: 20,
+  title: '学习卡兑换',
+  couponType: '单门课程',
+  validUntil: '',
+  userId: 0
+})
+
+const fetchCouponList = async () => {
+  const res: any = await couponAdminApi.getList()
+  couponList.value = res.data || []
+}
+
+const formatCouponUserOption = (u: { id: number; name: string; phone: string }) => {
+  return `${u.name}（ID:${u.id} / ${u.phone}）`
+}
+
+const fetchUserOptions = async () => {
+  const res: any = await userApi.getAdminUserOptions(couponUserKeyword.value || undefined)
+  couponUserOptions.value = res.data || []
+}
+
+const handleCouponUserInput = async () => {
+  couponIssueForm.value.userId = 0
+  showCouponUserDropdown.value = true
+  await fetchUserOptions()
+}
+
+const handleCouponUserFocus = async () => {
+  showCouponUserDropdown.value = true
+  await fetchUserOptions()
+}
+
+const handleCouponUserBlur = () => {
+  setTimeout(() => {
+    showCouponUserDropdown.value = false
+  }, 120)
+}
+
+const selectCouponUser = (u: { id: number; name: string; phone: string }) => {
+  couponIssueForm.value.userId = u.id
+  couponUserKeyword.value = formatCouponUserOption(u)
+  showCouponUserDropdown.value = false
+}
+
+const handleIssueCoupons = async () => {
+  const f = couponIssueForm.value
+  if (!f.count || f.count < 1) {
+    couponMessage.value = { type: 'error', text: '请输入发放数量' }
+    return
+  }
+  if (!f.amount || f.amount < 1) {
+    couponMessage.value = { type: 'error', text: '请输入优惠金额' }
+    return
+  }
+  if (!f.validUntil) {
+    couponMessage.value = { type: 'error', text: '请选择有效期' }
+    return
+  }
+  if (!f.userId) {
+    couponMessage.value = { type: 'error', text: '请选择指定用户' }
+    return
+  }
+
+  couponLoading.value = true
+  couponMessage.value = null
+  try {
+    await couponAdminApi.issue({
+      count: f.count,
+      amount: f.amount,
+      title: f.title || undefined,
+      couponType: f.couponType || undefined,
+      validUntil: f.validUntil,
+      userId: f.userId
+    })
+    couponMessage.value = { type: 'success', text: `成功发放 ${f.count} 张优惠卡券` }
+    couponIssueForm.value = {
+      ...couponIssueForm.value,
+      count: 1,
+      userId: 0
+    }
+    couponUserKeyword.value = ''
+    fetchCouponList()
+    fetchUserOptions()
+  } catch (e: any) {
+    couponMessage.value = { type: 'error', text: e.response?.data?.msg || '发放失败' }
+  } finally {
+    couponLoading.value = false
+  }
+}
+
 onMounted(() => {
   fetchSystemOptions()
   fetchTagOptions()
@@ -1293,6 +1481,8 @@ onMounted(() => {
   fetchAllCourseOptions()
   fetchFlashSales()
   fetchCardKeyList()
+  fetchCouponList()
+  fetchUserOptions()
 })
 </script>
 
@@ -1615,6 +1805,53 @@ button:disabled {
   font-size: 13px;
 }
 
+.coupon-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+.issue-tip {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #909399;
+}
+
+.user-select-combobox {
+  position: relative;
+}
+
+.user-dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  background: #fff;
+  z-index: 20;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+}
+
+.user-option {
+  padding: 8px 10px;
+  font-size: 13px;
+  color: #333;
+  cursor: pointer;
+}
+
+.user-option:hover {
+  background: #f5f7fa;
+}
+
+.user-option-empty {
+  color: #999;
+  cursor: default;
+}
+
 .card-key-table th,
 .card-key-table td {
   border: 1px solid #e0e0e0;
@@ -1622,7 +1859,19 @@ button:disabled {
   text-align: left;
 }
 
+.coupon-table th,
+.coupon-table td {
+  border: 1px solid #e0e0e0;
+  padding: 8px 10px;
+  text-align: left;
+}
+
 .card-key-table th {
+  background: #f5f5f5;
+  font-weight: 600;
+}
+
+.coupon-table th {
   background: #f5f5f5;
   font-weight: 600;
 }

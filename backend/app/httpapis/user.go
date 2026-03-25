@@ -81,3 +81,17 @@ func (a UserApi) UpdateProfile(c *gin.Context) {
 
 	a.OK(nil, "更新成功")
 }
+
+func (a UserApi) GetAdminUserOptions(c *gin.Context) {
+	a.MakeContext(c)
+
+	keyword := c.Query("keyword")
+	list, err := services.UserService.ListAdminOptions(keyword)
+	if err != nil {
+		logger.Sugar.Errorf("get admin user options error: %s", err.Error())
+		a.ErrorApi(err)
+		return
+	}
+
+	a.OK(list, "ok")
+}
