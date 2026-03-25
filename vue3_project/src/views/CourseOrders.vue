@@ -6,7 +6,19 @@
         <svg viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
       </button>
       <span class="nav-title">课程订单</span>
+      <span class="nav-placeholder"></span>
     </header>
+
+    <div class="order-tabs">
+      <button
+        v-for="tab in tabs"
+        :key="tab.value"
+        :class="['order-tab', { active: activeTab === tab.value }]"
+        @click="activeTab = tab.value"
+      >
+        {{ tab.label }}
+      </button>
+    </div>
 
     <main class="orders-content">
       <div v-if="!orders.length" class="empty">暂无订单</div>
@@ -19,6 +31,7 @@
           />
           <div class="course-info">
             <h3 class="course-name">{{ order.courseName }}</h3>
+            <div class="course-category-tag">{{ order.courseCategoryStr || (order.courseCategory === 2 ? '体系课程' : '单门课程') }}</div>
             <div class="course-price">¥{{ (order.price / 100).toFixed(2) }}</div>
           </div>
           <div class="order-status-badge" :class="statusClass(order.status)">{{ statusText(order) }}</div>
@@ -52,18 +65,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { orderApi } from '@/api'
 
 const orders = ref<any[]>([])
+const activeTab = ref<'all' | 'pending' | 'completed' | 'cancelled'>('all')
 const imageBaseUrl = 'http://localhost:8080'
+const tabs = [
+  { label: '全部', value: 'all' },
+  { label: '待支付', value: 'pending' },
+  { label: '已完成', value: 'completed' },
+  { label: '已取消', value: 'cancelled' }
+] as const
 
-onMounted(async () => {
+const fetchOrders = async () => {
+  const status =
+    activeTab.value === 'pending' ? 1 :
+    activeTab.value === 'completed' ? 2 :
+    activeTab.value === 'cancelled' ? 3 : undefined
   try {
-    const res: any = await orderApi.getMyOrders()
+    const res: any = await orderApi.getMyOrders(status)
     orders.value = res.data || []
   } catch (e) {}
-})
+}
+
+onMounted(fetchOrders)
+watch(activeTab, fetchOrders)
 
 function statusClass(status: number) {
   if (status === 1) return 'pending'
@@ -72,7 +99,6 @@ function statusClass(status: number) {
 }
 
 function statusText(order: any) {
-  if (order.statusStr) return order.statusStr
   if (order.status === 1) return '待支付'
   if (order.status === 2) return '已完成'
   return '已取消'
@@ -82,22 +108,70 @@ function statusText(order: any) {
 <style scoped>
 .course-orders-page {
   background-color: #f5f5f5;
-  min-height: 100vh;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
 .top-nav {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 24px 1fr 24px;
   align-items: center;
   padding: 12px 16px;
   background-color: #fff;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  flex-shrink: 0;
+}
+
+.order-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  align-items: center;
+  background: #fff;
+  border-bottom: 1px solid #edf0f6;
+  flex-shrink: 0;
+}
+
+.order-tab {
+  background: none;
+  border: none;
+  padding: 12px 0;
+  font-size: 15px;
+  color: #666;
+  cursor: pointer;
+  position: relative;
+}
+
+.order-tab.active {
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+.order-tab.active::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 24px;
+  height: 3px;
+  border-radius: 99px;
+  transform: translateX(-50%);
+  background: #3b82f6;
 }
 
 .back-btn {
   background: none;
   border: none;
   padding: 0;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
 
@@ -111,11 +185,21 @@ function statusText(order: any) {
   font-size: 18px;
   font-weight: 600;
   color: #333;
-  flex: 1;
   text-align: center;
 }
 
+.nav-placeholder {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
 .orders-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
   padding: 12px 16px;
 }
 
@@ -158,6 +242,16 @@ function statusText(order: any) {
   color: #333;
   margin: 0 0 6px 0;
   line-height: 1.4;
+}
+
+.course-category-tag {
+  display: inline-block;
+  font-size: 12px;
+  color: #3b82f6;
+  background: #eaf2ff;
+  border-radius: 6px;
+  padding: 3px 8px;
+  margin-bottom: 6px;
 }
 
 .course-price {

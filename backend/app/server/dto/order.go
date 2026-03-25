@@ -19,17 +19,23 @@ type PayOrderReq struct {
 }
 
 type OrderResp struct {
-	ID          uint               `json:"id"`
-	OrderNo     string             `json:"orderNo"`
-	CourseEk    int64              `json:"courseEk"`
-	CourseName  string             `json:"courseName"`
-	CourseImage string             `json:"courseImage"`
-	Price       int                `json:"price"`
-	PayType     models.PayType     `json:"payType"`
-	PayTypeStr  string             `json:"payTypeStr"`
-	Status      models.OrderStatus `json:"status"`
-	StatusStr   string             `json:"statusStr"`
-	CreatedAt   string             `json:"createdAt"`
+	ID                uint                  `json:"id"`
+	OrderNo           string                `json:"orderNo"`
+	CourseEk          int64                 `json:"courseEk"`
+	CourseName        string                `json:"courseName"`
+	CourseCategory    models.CourseCategory `json:"courseCategory"`
+	CourseCategoryStr string                `json:"courseCategoryStr"`
+	CourseImage       string                `json:"courseImage"`
+	Price             int                   `json:"price"`
+	PayType           models.PayType        `json:"payType"`
+	PayTypeStr        string                `json:"payTypeStr"`
+	Status            models.OrderStatus    `json:"status"`
+	StatusStr         string                `json:"statusStr"`
+	CreatedAt         string                `json:"createdAt"`
+}
+
+type GetMyOrdersReq struct {
+	Status *models.OrderStatus `form:"status"`
 }
 
 type GenerateCardKeyReq struct {

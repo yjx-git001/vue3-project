@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="mock-exam-detail-page">
     <!-- 加载中 -->
     <div v-if="loading" class="loading-wrap">
@@ -8,7 +8,7 @@
     <!-- 无题目 -->
     <div v-else-if="questions.length === 0" class="empty-wrap">
       <p>该课程暂未配置模拟考试题目</p>
-      <button class="back-text-btn" @click="$router.back()">返回</button>
+      <button class="back-text-btn" @click="goBack">返回</button>
     </div>
 
     <!-- 交卷结果页 -->
@@ -16,7 +16,7 @@
 
       <!-- 顶部导航 -->
       <header class="top-nav">
-        <button class="back-btn" @click="$router.back()">
+        <button class="back-btn" @click="goBack">
           <svg viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
         </button>
         <span class="nav-title">考试结果</span>
@@ -84,7 +84,7 @@
 
               <!-- 正确答案 + 解析 -->
               <div class="wrong-answer-card">
-                <div class="wrong-correct-ans">正确答案：{{ item.q.answer }}</div>
+                <div class="wrong-correct-ans">正确答案：{{ formatAnswerDisplay(item.q.answer) }}</div>
                 <div v-if="item.q.analysis" class="wrong-analysis">错题解析：{{ item.q.analysis }}</div>
               </div>
             </div>
@@ -114,7 +114,7 @@
       <div class="course-info-section">
         <h2 class="course-name">{{ courseName }}</h2>
         <div class="exam-meta-row">
-          <div class="timer" :class="{ urgent: timeLeft <= 300 }">
+          <div class="timer">
             <svg viewBox="0 0 24 24" class="timer-icon">
               <path d="M12,20A7,7 0 0,1 5,13A7,7 0 0,1 12,6A7,7 0 0,1 19,13A7,7 0 0,1 12,20M19.03,7.39L20.45,5.97C20,5.46 19.55,5 19.04,4.56L17.62,6C16.07,4.74 14.12,4 12,4A9,9 0 0,0 3,13A9,9 0 0,0 12,22C17,22 21,18 21,13C21,10.88 20.26,8.93 19.03,7.39M11,14H13V8H11M15,1H9V3H15V1Z" />
             </svg>
@@ -135,9 +135,6 @@
         <div class="question-card">
           <div class="question-card-header">
             <span class="question-type-label">{{ typeLabel }}</span>
-            <div v-if="answerResult !== null" class="status-badge" :class="answerResult ? 'correct' : 'error'">
-              {{ answerResult ? '正确' : '错误' }}
-            </div>
           </div>
           <p class="question-text">{{ currentIndex + 1 }}. {{ currentQuestion.content }}</p>
         </div>
@@ -147,12 +144,12 @@
           <div
             v-for="opt in judgeOptions"
             :key="opt.value"
-            :class="['option-item', { selected: answers[currentIndex] === opt.value }]"
+            :class="['option-item', { selected: isSelected(opt.value) }]"
             @click="selectAnswer(opt.value)"
           >
             <div class="option-content">
-              <div class="option-radio" :class="{ selected: answers[currentIndex] === opt.value }">
-                <svg v-if="answers[currentIndex] === opt.value" viewBox="0 0 24 24" class="radio-icon">
+              <div class="option-radio" :class="{ selected: isSelected(opt.value) }">
+                <svg v-if="isSelected(opt.value)" viewBox="0 0 24 24" class="radio-icon">
                   <circle cx="12" cy="12" r="5" />
                 </svg>
               </div>
@@ -193,7 +190,13 @@
           <h3 class="modal-title">答题卡</h3>
           <div class="filter-tabs">
             <button class="clear-btn" @click="clearAnswers">
-              <svg viewBox="0 0 24 24" class="clear-icon"><path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19Z" /></svg>
+              <svg viewBox="0 0 24 24" class="clear-icon" aria-hidden="true">
+                <rect x="9" y="4" width="6" height="2" rx="0.8" />
+                <path d="M12 6v4" />
+                <path d="M8 10h8" />
+                <path d="M6 10v2M18 10v2" />
+                <rect x="4" y="12" width="16" height="7" rx="1.6" />
+              </svg>
               清空答题卡
             </button>
             <div class="status-indicators">
@@ -275,8 +278,6 @@ const showAnswerCard = ref(false)
 const answers = ref<Record<number, string>>({})
 // 多选临时选项
 const multiSelected = ref<string[]>([])
-// 当前题目答题结果
-const answerResult = ref<boolean | null>(null)
 let autoNextTimer: ReturnType<typeof setTimeout> | null = null
 
 // 倒计时：30分钟 = 1800秒
@@ -335,7 +336,7 @@ const scheduleAutoNext = () => {
 }
 
 const selectAnswer = (key: string) => {
-  if (answerResult.value !== null) return
+  if (answers.value[currentIndex.value] !== undefined) return
   if (currentQuestion.value.questionType === 2) {
     // 多选：toggle
     const idx = multiSelected.value.indexOf(key)
@@ -344,19 +345,15 @@ const selectAnswer = (key: string) => {
     return
   }
   // 单选/判断：显示解析后自动下一题
-  const correct = String(currentQuestion.value.answer || '')
   answers.value[currentIndex.value] = key
-  answerResult.value = key === correct
   scheduleAutoNext()
 }
 
 const submitMultiple = () => {
-  if (answerResult.value !== null || multiSelected.value.length === 0) return
+  if (answers.value[currentIndex.value] !== undefined || multiSelected.value.length === 0) return
   const userAnswer = multiSelected.value.slice().sort().join('')
-  const correct = String(currentQuestion.value.answer || '')
   answers.value[currentIndex.value] = userAnswer
   multiSelected.value = userAnswer.split('')
-  answerResult.value = userAnswer === correct
   scheduleAutoNext()
 }
 
@@ -385,8 +382,6 @@ const goToQuestion = (idx: number) => {
 
 const syncCurrentQuestionState = () => {
   const rec = answers.value[currentIndex.value]
-  const correct = String(currentQuestion.value.answer || '')
-  answerResult.value = rec !== undefined ? rec === correct : null
   if (currentQuestion.value.questionType === 2 && rec) {
     multiSelected.value = rec.split('')
   } else {
@@ -428,13 +423,19 @@ const getOptions = (q: any) => {
   return opts
 }
 
+const formatAnswerDisplay = (answer: string) => {
+  const normalized = String(answer || '').toUpperCase()
+  if (normalized === 'T') return '正确'
+  if (normalized === 'F') return '错误'
+  return answer || ''
+}
+
 // 继续考试：重置所有状态重新抽题
 const retryExam = async () => {
   submitted.value = false
   clearAutoNextTimer()
   answers.value = {}
   multiSelected.value = []
-  answerResult.value = null
   currentIndex.value = 0
   timeLeft.value = 1800
   try {
@@ -462,19 +463,20 @@ const clearAnswers = () => {
   clearAutoNextTimer()
   answers.value = {}
   multiSelected.value = []
-  answerResult.value = null
 }
 
 const doSubmit = async () => {
   stopTimer()
   showAnswerCard.value = false
+  const examDuration = Math.max(0, Math.floor((Date.now() - startTime) / 1000))
   // 保存考试记录
   try {
     await mockExamApi.saveRecord({
       courseEk: courseEk.value,
       score: score.value,
       total: questions.value.length,
-      correct: correctCount.value
+      correct: correctCount.value,
+      duration: examDuration
     })
   } catch { /* 静默失败 */ }
   // 保存错题记录
@@ -501,10 +503,18 @@ const handleSubmit = () => {
   doSubmit()
 }
 
+const goBack = () => {
+  if (window.history.length > 1) {
+    router.back()
+  } else {
+    router.push(`/course_content/${route.params.id}`)
+  }
+}
+
 const confirmBack = () => {
   showDialog('确定退出考试吗？当前答题进度将丢失。', () => {
     stopTimer()
-    router.back()
+    goBack()
   })
 }
 
@@ -571,8 +581,12 @@ onUnmounted(async () => {
 <style scoped>
 .mock-exam-detail-page {
   background-color: #f5f5f5;
-  min-height: 100vh;
-  padding-bottom: 80px;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
 /* 顶部导航 */
@@ -583,11 +597,18 @@ onUnmounted(async () => {
   padding: 12px 16px;
   background-color: #fff;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  flex-shrink: 0;
 }
 .back-btn {
   background: none;
   border: none;
   padding: 0;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
 .back-btn svg {
@@ -604,6 +625,8 @@ onUnmounted(async () => {
 }
 .nav-placeholder {
   width: 24px;
+  height: 24px;
+  flex-shrink: 0;
 }
 
 .exam-meta-row {
@@ -621,21 +644,20 @@ onUnmounted(async () => {
 .timer-icon {
   width: 16px;
   height: 16px;
-  fill: #3b82f6;
+  fill: #d9dde6;
 }
 .time-text {
   font-size: 15px;
-  color: #3b82f6;
+  color: #ff4d4f;
   font-weight: 700;
 }
-.timer.urgent .timer-icon { fill: #ff4d4f; }
-.timer.urgent .time-text { color: #ff4d4f; }
 
 /* 课程信息区 */
 .course-info-section {
   background-color: #fff;
   padding: 16px;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
+  flex-shrink: 0;
 }
 .course-name {
   font-size: 16px;
@@ -669,7 +691,12 @@ onUnmounted(async () => {
 
 /* 题目内容 */
 .exam-content {
-  padding: 12px 16px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px 16px 16px;
 }
 .question-card {
   background: #fff;
@@ -762,16 +789,14 @@ onUnmounted(async () => {
 
 /* 底部导航 */
 .bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 12px 20px;
   background-color: #fff;
   border-top: 1px solid #eee;
+  flex-shrink: 0;
 }
 .nav-btn {
   background: none;
@@ -867,7 +892,11 @@ onUnmounted(async () => {
 .clear-icon {
   width: 16px;
   height: 16px;
-  fill: #ff9800;
+  fill: none;
+  stroke: #ff9800;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .status-indicators {
   display: flex;
@@ -881,10 +910,10 @@ onUnmounted(async () => {
 .status-dot {
   width: 14px;
   height: 14px;
-  border-radius: 50%;
+  border-radius: 4px;
 }
-.answered-dot { background-color: #3b82f6; }
-.unanswered-dot { background-color: #f5f5f5; border: 1px solid #ccc; }
+.answered-dot { background-color: #d8e5ff; border: 1px solid #c0d2f5; }
+.unanswered-dot { background-color: #f2f2f2; border: 1px solid #e5e5e5; }
 .status-text { font-size: 14px; color: #666; }
 .question-grid {
   display: grid;
@@ -904,12 +933,12 @@ onUnmounted(async () => {
   transition: all 0.2s;
 }
 .question-number.answered {
-  background-color: #e3f2fd;
-  color: #3b82f6;
+  background-color: #dbe7ff;
+  color: #366fcf;
   font-weight: 600;
 }
 .question-number.current {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid #9fb8e8;
 }
 
 /* 加载 / 空状态 */
@@ -922,6 +951,8 @@ onUnmounted(async () => {
   color: #999;
   font-size: 15px;
   gap: 16px;
+  flex: 1;
+  min-height: 0;
 }
 .back-text-btn {
   padding: 10px 32px;
@@ -935,9 +966,11 @@ onUnmounted(async () => {
 
 /* 结果页 */
 .result-page {
-  min-height: 100vh;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   background: #f5f5f5;
-  padding-bottom: 80px;
+  padding-bottom: 16px;
 }
 
 /* 得分卡片 */

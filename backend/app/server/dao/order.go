@@ -14,9 +14,13 @@ func (d orderDao) Create(db *gorm.DB, order *models.Order) error {
 	return db.Create(order).Error
 }
 
-func (d orderDao) GetByUserID(db *gorm.DB, userID uint) ([]models.Order, error) {
+func (d orderDao) GetByUserID(db *gorm.DB, userID uint, status *models.OrderStatus) ([]models.Order, error) {
 	var list []models.Order
-	err := db.Where("user_id = ?", userID).Order("created_at DESC").Find(&list).Error
+	query := db.Where("user_id = ?", userID)
+	if status != nil {
+		query = query.Where("status = ?", *status)
+	}
+	err := query.Order("created_at DESC").Find(&list).Error
 	return list, err
 }
 

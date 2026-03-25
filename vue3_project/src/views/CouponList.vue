@@ -6,6 +6,7 @@
         <svg viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
       </button>
       <span class="nav-title">优惠卡券</span>
+      <span class="nav-placeholder"></span>
     </header>
 
     <!-- 标签页 -->
@@ -130,7 +131,12 @@ const expiredCoupons = ref([
 <style scoped>
 .coupon-list-page {
   background-color: #f5f5f5;
-  min-height: 100vh;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
 .top-nav {
@@ -140,12 +146,19 @@ const expiredCoupons = ref([
   padding: 12px 16px;
   background-color: #fff;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  flex-shrink: 0;
 }
 
 .back-btn {
   background: none;
   border: none;
   padding: 0;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
 
@@ -161,6 +174,12 @@ const expiredCoupons = ref([
   color: #333;
   flex: 1;
   text-align: center;
+}
+
+.nav-placeholder {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
 }
 
 .nav-actions {
@@ -185,6 +204,7 @@ const expiredCoupons = ref([
   display: flex;
   background-color: #fff;
   padding: 0 16px;
+  flex-shrink: 0;
 }
 
 .tab-item {
@@ -215,6 +235,11 @@ const expiredCoupons = ref([
 }
 
 .coupon-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
   padding: 16px;
 }
 

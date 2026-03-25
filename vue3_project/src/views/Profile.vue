@@ -335,7 +335,7 @@ const recommendCourses = ref<Array<{
   font-size: 13px;
   font-weight: 500;
   position: absolute;
-  right: 0;
+  right: -15px;
 }
 
 .user-stats {

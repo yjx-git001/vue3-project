@@ -117,6 +117,7 @@ func (s courseContentService) SaveMockExamRecord(userID uint, req *dto.MockExamR
 		Score:    req.Score,
 		Total:    req.Total,
 		Correct:  req.Correct,
+		Duration: req.Duration,
 	})
 }
 
@@ -129,6 +130,29 @@ func (s courseContentService) GetMockExamStats(userID uint, courseEk int64) (*dt
 		MockCount:    mockCount,
 		HighestScore: highestScore,
 	}, nil
+}
+
+func (s courseContentService) GetMockExamHistory(userID uint, courseEk int64) ([]dto.MockExamRecordItem, error) {
+	records, err := dao.MockExamRecordDao.GetList(db.Db, userID, courseEk)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]dto.MockExamRecordItem, 0, len(records))
+	for _, r := range records {
+		createdAt := ""
+		if r.CreatedAt != nil {
+			createdAt = r.CreatedAt.Format("2006-01-02 15:04:05")
+		}
+		result = append(result, dto.MockExamRecordItem{
+			ID:        r.ID,
+			Score:     r.Score,
+			Total:     r.Total,
+			Correct:   r.Correct,
+			Duration:  r.Duration,
+			CreatedAt: createdAt,
+		})
+	}
+	return result, nil
 }
 
 // ===== 错题记录 =====

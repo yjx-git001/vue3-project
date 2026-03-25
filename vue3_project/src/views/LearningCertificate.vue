@@ -1,28 +1,29 @@
 <template>
   <div class="learning-certificate-page">
-    <!-- 顶部导航 -->
-    <header class="top-nav">
-      <button class="back-btn" @click="$router.back()">
-        <svg viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
-      </button>
-      <span class="nav-title">学习证书</span>
+    <header class="header-shell">
+      <div class="top-nav">
+        <button class="back-btn" @click="$router.back()" aria-label="&#x8FD4;&#x56DE;">
+          <svg viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </button>
+        <span class="nav-title">&#x5B66;&#x4E60;&#x8BC1;&#x4E66;</span>
+        <span class="nav-placeholder"></span>
+      </div>
     </header>
 
-    <!-- 提示信息 -->
     <div class="notice-banner">
       <svg viewBox="0 0 24 24" class="notice-icon">
         <circle cx="12" cy="12" r="9.25" />
         <path d="M8 12.4L10.55 14.95L16.1 9.4" />
       </svg>
-      <span>完成学习后可下载学时证明</span>
+      <span>&#x5B8C;&#x6210;&#x5B66;&#x4E60;&#x540E;&#x53EF;&#x4E0B;&#x8F7D;&#x5B66;&#x65F6;&#x8BC1;&#x660E;</span>
     </div>
 
     <div v-if="loading" class="loading-wrap">
-      <p>加载中...</p>
+      <p>&#x52A0;&#x8F7D;&#x4E2D;...</p>
     </div>
 
     <div v-else-if="certificateList.length === 0" class="empty-wrap">
-      <p>暂无符合条件的课程</p>
+      <p>&#x6682;&#x65E0;&#x7B26;&#x5408;&#x6761;&#x4EF6;&#x7684;&#x8BFE;&#x7A0B;</p>
     </div>
 
     <main v-else class="certificate-content">
@@ -36,21 +37,22 @@
           <div class="course-info">
             <h3 class="course-name">{{ course.courseName }}</h3>
             <div class="course-stats">
-              <span class="stat-item">模拟次数：{{ course.mockCount }}次</span>
-              <span class="stat-item">学习时长：{{ course.studyTime }}</span>
+              <span class="stat-item">&#x6A21;&#x62DF;&#x6B21;&#x6570;&#xFF1A;{{ course.mockCount }}&#x6B21;</span>
+              <span class="stat-item">&#x5B66;&#x4E60;&#x65F6;&#x957F;&#xFF1A;{{ course.studyTime }}</span>
             </div>
             <div class="score-info">
-              <span class="score-label">最高得分：</span>
-              <span class="score-value">{{ course.highestScore }}分</span>
+              <span class="score-label">&#x6700;&#x9AD8;&#x5F97;&#x5206;&#xFF1A;</span>
+              <span class="score-value">{{ course.highestScore }}&#x5206;</span>
             </div>
           </div>
         </div>
+
         <div class="button-wrapper">
           <button
             class="download-btn"
             @click="$router.push('/certificate_detail/' + course.courseEk)"
           >
-            下载学时证明
+            &#x4E0B;&#x8F7D;&#x5B66;&#x65F6;&#x8BC1;&#x660E;
           </button>
         </div>
       </div>
@@ -136,22 +138,38 @@ onMounted(async () => {
 
 <style scoped>
 .learning-certificate-page {
-  background-color: #f5f5f5;
-  min-height: 100vh;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: #eef1f6;
+  width: 100%;
+  max-width: 390px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.header-shell {
+  background: #fff;
+  border-bottom: 1px solid #edf1f6;
+  flex-shrink: 0;
 }
 
 .top-nav {
+  height: 56px;
+  padding: 0 14px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
-  background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  justify-content: space-between;
+  background: #fff;
 }
 
 .back-btn {
   background: none;
   border: none;
+  width: 24px;
+  height: 24px;
   padding: 0;
   cursor: pointer;
 }
@@ -159,33 +177,39 @@ onMounted(async () => {
 .back-btn svg {
   width: 24px;
   height: 24px;
-  fill: #333;
+  fill: #1f2937;
 }
 
 .nav-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
   flex: 1;
   text-align: center;
+  color: #1f2937;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.nav-placeholder {
+  width: 24px;
+  height: 24px;
 }
 
 .notice-banner {
-  background-color: #fff1e5;
+  margin-top: 8px;
+  background: #fdf2e6;
+  color: #f29543;
+  font-size: 14px;
+  font-weight: 500;
   padding: 10px 16px;
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: #f28a1e;
-  font-size: 15px;
-  line-height: 1.2;
-  margin-top: 8px;
-  margin-bottom: 8px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .notice-icon {
-  width: 14px;
-  height: 14px;
+  width: 15px;
+  height: 15px;
   stroke: currentColor;
   stroke-width: 2;
   fill: none;
@@ -196,97 +220,103 @@ onMounted(async () => {
 
 .loading-wrap,
 .empty-wrap {
+  flex: 1;
+  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 60vh;
-  color: #999;
-  font-size: 15px;
+  color: #9aa3af;
+  font-size: 14px;
 }
 
 .certificate-content {
-  padding: 0 16px 16px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  padding: 10px;
 }
 
 .certificate-card {
-  background-color: #fff;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 12px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 14px;
 }
 
 .card-content {
   display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .course-image {
-  width: 100px;
-  height: 75px;
-  border-radius: 8px;
+  width: 92px;
+  height: 68px;
+  border-radius: 10px;
   object-fit: cover;
   flex-shrink: 0;
 }
 
 .course-info {
   flex: 1;
+  min-width: 0;
 }
 
 .course-name {
-  font-size: 15px;
+  margin: 0 0 10px;
+  font-size: 16px;
+  line-height: 1.1;
+  color: #1f2937;
   font-weight: 600;
-  color: #333;
-  margin: 0 0 8px 0;
-  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .course-stats {
   display: flex;
-  flex-direction: row;
-  gap: 16px;
-  margin-bottom: 8px;
+  gap: 8px 14px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
 }
 
 .stat-item {
-  font-size: 13px;
-  color: #666;
+  font-size: 14px;
+  color: #4b5563;
+  line-height: 1.25;
 }
 
 .score-info {
-  font-size: 13px;
-}
-
-.score-label {
-  color: #666;
-}
-
-.score-value {
-  color: #ff4d4f;
-  font-weight: 600;
   font-size: 14px;
 }
 
+.score-label {
+  color: #4b5563;
+}
+
+.score-value {
+  color: #f97316;
+  font-weight: 700;
+}
+
 .button-wrapper {
+  border-top: 1px solid #edf1f6;
+  padding-top: 10px;
   display: flex;
   justify-content: flex-end;
-  border-top: 1px solid #f0f0f0;
-  margin-top: 12px;
-  padding-top: 12px;
 }
 
 .download-btn {
-  padding: 12px 24px;
-  background-color: #3b82f6;
-  color: #fff;
+  width: 192px;
+  height: 44px;
   border: none;
-  border-radius: 8px;
-  font-size: 15px;
-  font-weight: 500;
+  border-radius: 12px;
+  background: #4f72ff;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
-  box-shadow: none;
-  outline: none;
-  -webkit-appearance: none;
-  appearance: none;
 }
 </style>

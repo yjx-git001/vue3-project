@@ -85,7 +85,12 @@ onMounted(async () => {
 <style scoped>
 .wrong-questions-page {
   background-color: #f5f5f5;
-  min-height: 100vh;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
 .top-nav {
@@ -95,12 +100,19 @@ onMounted(async () => {
   padding: 12px 16px;
   background-color: #fff;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  flex-shrink: 0;
 }
 
 .back-btn {
   background: none;
   border: none;
   padding: 0;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
 
@@ -120,19 +132,27 @@ onMounted(async () => {
 
 .nav-placeholder {
   width: 24px;
+  height: 24px;
+  flex-shrink: 0;
 }
 
 .loading-wrap,
 .empty-wrap {
+  flex: 1;
+  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 60vh;
   color: #999;
   font-size: 15px;
 }
 
 .questions-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
   padding: 15px;
 }
 
@@ -146,7 +166,9 @@ onMounted(async () => {
 .card-header {
   display: flex;
   gap: 12px;
+  padding-bottom: 12px;
   margin-bottom: 12px;
+  border-bottom: 1px solid #f2f4f7;
 }
 
 .course-image {

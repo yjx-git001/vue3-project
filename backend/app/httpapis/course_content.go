@@ -229,6 +229,23 @@ func (a CourseContentApi) GetMockExamStats(c *gin.Context) {
 	a.OK(result, "ok")
 }
 
+func (a CourseContentApi) GetMockExamHistory(c *gin.Context) {
+	var req dto.MockExamRecordGetReq
+	if err := a.MakeContext(c).Bind(&req, binding.Query).Errors; err != nil {
+		logger.Sugar.Errorf("binding req data error: %s", err)
+		a.ErrorApi(err)
+		return
+	}
+	userID := c.GetUint("userID")
+	result, err := services.CourseContentService.GetMockExamHistory(userID, req.CourseEk)
+	if err != nil {
+		logger.Sugar.Errorf("get mock exam history error: %s", err)
+		a.ErrorApi(err)
+		return
+	}
+	a.OK(result, "ok")
+}
+
 // ===== 错题记录 =====
 
 func (a CourseContentApi) SaveWrongQuestions(c *gin.Context) {

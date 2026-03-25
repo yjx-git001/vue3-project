@@ -20,12 +20,15 @@
         <h1 class="course-name">{{ courseDetail.courseName }}</h1>
         <div class="price-section">
           <span class="price">¥{{ (courseDetail.price / 100).toFixed(2) }}</span>
-          <span class="original-price">¥{{ (courseDetail.originalPrice / 100).toFixed(2) }}</span>
+          <span v-if="courseDetail.courseCategory !== 1 && courseDetail.originalPrice != null" class="original-price">¥{{ (courseDetail.originalPrice / 100).toFixed(2) }}</span>
         </div>
         <div class="course-desc-wrap">
-          <p class="course-desc" :class="{ 'course-desc--collapsed': !showMore }">{{ courseDetail.courseDetail }}</p>
-          <button v-if="isLongDesc" class="more-btn" @click="showMore = !showMore">
-            {{ showMore ? '收起 ∧' : '查看更多 ∨' }}
+          <p ref="descRef" class="course-desc" :class="{ 'course-desc--collapsed': !showMore }">{{ courseDetail.courseDetail }}</p>
+          <button v-if="showDescToggle" class="more-btn" @click="showMore = !showMore">
+            <span>{{ showMore ? '收起' : '查看更多' }}</span>
+            <svg class="more-icon" :class="{ 'more-icon--up': showMore }" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7 10l5 5 5-5" />
+            </svg>
           </button>
         </div>
       </section>
@@ -103,7 +106,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { courseApi, studyApi, orderApi } from '@/api'
 
@@ -112,10 +115,28 @@ const courseDetail = ref<any>({})
 const contentList = ref<any[]>([])
 const imageBaseUrl = 'http://localhost:8080'
 const showMore = ref(false)
-const DESC_LIMIT = 100
+const showDescToggle = ref(false)
+const descRef = ref<HTMLElement | null>(null)
 const purchased = ref(false)
 
-const isLongDesc = computed(() => (courseDetail.value.courseDetail || '').length > DESC_LIMIT)
+const updateDescToggle = async () => {
+  await nextTick()
+  const text = (courseDetail.value.courseDetail || '').trim()
+  if (!text) {
+    showDescToggle.value = false
+    return
+  }
+  if (showMore.value) {
+    showDescToggle.value = true
+    return
+  }
+  const el = descRef.value
+  if (!el) {
+    showDescToggle.value = text.length > 100
+    return
+  }
+  showDescToggle.value = el.scrollHeight - el.clientHeight > 1
+}
 
 const fetchCourseDetail = async () => {
   try {
@@ -123,6 +144,8 @@ const fetchCourseDetail = async () => {
     const res: any = await courseApi.getCourseDetail(ek)
     courseDetail.value = res.data
     contentList.value = res.data.courseContent || []
+    showMore.value = false
+    await updateDescToggle()
   } catch (error) {
     console.error('获取课程详情失败:', error)
   }
@@ -145,6 +168,7 @@ onMounted(() => {
   fetchCourseDetail()
   checkPurchased()
   startTime = Date.now()
+  window.addEventListener('resize', updateDescToggle)
 })
 
 watch(() => route.params.id, () => {
@@ -154,6 +178,7 @@ watch(() => route.params.id, () => {
 })
 
 onUnmounted(async () => {
+  window.removeEventListener('resize', updateDescToggle)
   const token = localStorage.getItem('token')
   if (!token) return
   const duration = Math.floor((Date.now() - startTime) / 1000)
@@ -170,10 +195,13 @@ onUnmounted(async () => {
 <style scoped>
 .course-detail {
   background-color: #f5f5f5;
-  min-height: 100vh;
-  padding-bottom: 70px;
-  overflow-x: hidden;
-  max-width: 100vw;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
   margin: 0 auto;
 }
 
@@ -184,16 +212,25 @@ onUnmounted(async () => {
   padding: 12px 16px;
   background-color: #fff;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  flex-shrink: 0;
 }
 
 .nav-placeholder {
   width: 24px;
+  height: 24px;
+  flex-shrink: 0;
 }
 
 .back-btn {
   background: none;
   border: none;
   padding: 0;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
 
@@ -230,9 +267,15 @@ onUnmounted(async () => {
 }
 
 .detail-content {
-  padding-bottom: 80px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 16px;
   max-width: 1200px;
   margin: 0 auto;
+  width: 100%;
 }
 
 .course-info-card {
@@ -338,16 +381,35 @@ onUnmounted(async () => {
 }
 
 .more-btn {
-  background: none;
+  background: #f4f6fb;
   border: none;
-  color: #3b82f6;
+  color: #8b94a3;
   font-size: 14px;
   cursor: pointer;
-  padding: 0;
+  padding: 8px 18px;
   margin-bottom: 8px;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 999px;
+  margin-left: 50%;
+  transform: translateX(-50%);
+}
+
+.more-icon {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.2s ease;
+}
+
+.more-icon--up {
+  transform: rotate(180deg);
 }
 
 .course-stats {
@@ -454,7 +516,7 @@ onUnmounted(async () => {
 }
 
 .content-title {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   color: #333;
 }
@@ -470,7 +532,7 @@ onUnmounted(async () => {
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
-  padding: 12px 8px;
+  padding: 12px 0;
   transition: background-color 0.2s;
 }
 
@@ -519,16 +581,14 @@ onUnmounted(async () => {
 }
 
 .buy-footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 12px 16px;
   background-color: #fff;
   box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+  flex-shrink: 0;
 }
 
 .price-info {

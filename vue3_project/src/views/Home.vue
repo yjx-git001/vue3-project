@@ -18,9 +18,6 @@
             </div>
           </div>
         </div>
-        <div class="carousel-dots">
-          <span v-for="(_, index) in banners" :key="index" :class="['dot', { active: currentIndex === index }]" @click="currentIndex = index"></span>
-        </div>
       </section>
 
       <!-- 课程体系 -->
@@ -133,6 +130,8 @@ const fetchBanners = async () => {
   try {
     const res: any = await bannerAdminApi.getList()
     banners.value = res.data || []
+    currentIndex.value = 0
+    startAutoPlay()
   } catch (error) {
     console.error('获取banner失败:', error)
   }
@@ -145,6 +144,7 @@ let autoPlayTimer: number
 
 const handleTouchStart = (e: TouchEvent) => {
   touchStartX = e.touches[0]?.clientX || 0
+  touchEndX = touchStartX
   clearInterval(autoPlayTimer)
 }
 
@@ -153,16 +153,19 @@ const handleTouchMove = (e: TouchEvent) => {
 }
 
 const handleTouchEnd = () => {
-  if (touchStartX - touchEndX > 50 && currentIndex.value < banners.value.length - 1) {
+  const endX = touchEndX || touchStartX
+  if (touchStartX - endX > 50 && currentIndex.value < banners.value.length - 1) {
     currentIndex.value++
   }
-  if (touchEndX - touchStartX > 50 && currentIndex.value > 0) {
+  if (endX - touchStartX > 50 && currentIndex.value > 0) {
     currentIndex.value--
   }
   startAutoPlay()
 }
 
 const startAutoPlay = () => {
+  clearInterval(autoPlayTimer)
+  if (banners.value.length <= 1) return
   autoPlayTimer = window.setInterval(() => {
     currentIndex.value = (currentIndex.value + 1) % banners.value.length
   }, 3000)
@@ -191,7 +194,7 @@ const fetchCourses = async () => {
     courseSystems.value = (systemRes.data?.list || []).map(mapCourse)
     hotCourses.value = (hotRes.data || []).map(mapCourse)
 
-    // 检查购买状态
+    // 检查购买状�?
     if (localStorage.getItem('token')) {
       try {
         const systemChecks = await Promise.all(
@@ -334,26 +337,6 @@ onUnmounted(() => {
   display: block;
 }
 
-.carousel-dots {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: #ddd;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.dot.active {
-  background-color: #3b82f6;
-}
-
 .video-overlay {
   position: absolute;
   top: 0;
@@ -423,7 +406,30 @@ onUnmounted(() => {
 }
 
 .promo-section .section-header h2 {
-  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #1f2937;
+  font-size: 18px;
+  font-weight: 800;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.promo-section .section-header h2::after {
+  content: '\26A1';
+  color: #ff8a00;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.promo-section .section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 8px;
+  margin-bottom: 10px;
 }
 
 .see-all {
@@ -512,65 +518,111 @@ onUnmounted(() => {
 }
 
 .promo-section {
-  background-color: #cce5ff;
-  padding: 5px 20px 15px 20px;
-  border-radius: 10px;
+  background-color: #eef3fb;
+  padding: 14px 16px 16px;
+  border-radius: 18px;
   margin-bottom: 20px;
 }
 
 .countdown {
   display: flex;
   align-items: center;
-  font-size: 14px;
-  color: #fff;
+  font-size: 13px;
+  color: #7b8798;
+  gap: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.countdown > span:first-child {
+  margin-right: 4px;
 }
 
 .timer-box {
-  background-color: #333;
+  background-color: #4f72b7;
   color: #fff;
-  padding: 2px 5px;
-  border-radius: 3px;
-  margin: 0 5px;
+  min-width: 28px;
+  padding: 4px 5px;
+  border-radius: 8px;
+  margin: 0 1px;
+  text-align: center;
+  font-weight: 600;
 }
 
 .promo-card {
   display: flex;
-  align-items: center;
-  margin-top: 8px;
+  align-items: stretch;
+  margin-top: 10px;
   background-color: #fff;
-  padding: 15px;
-  border-radius: 10px;
+  padding: 12px;
+  border-radius: 18px;
 }
 
 .promo-image {
-  width: 100px;
-  height: 100px;
-  border-radius: 10px;
-  margin-right: 15px;
+  width: 104px;
+  height: 104px;
+  border-radius: 14px;
+  margin-right: 12px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.promo-info {
+  flex: 1;
+  min-width: 0;
+  height: 104px;
+  position: relative;
+  padding: 2px 0;
 }
 
 .promo-title {
+  margin: 0;
+  position: absolute;
+  top: 30px;
+  left: 0;
+  right: 0;
   font-size: 16px;
-  font-weight: bold;
+  font-weight: 600;
+  color: #1f2937;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
 }
 
 .promo-meta {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 2px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 20px;
+  gap: 8px;
+  min-width: 0;
 }
 
 .promo-meta .learn-button {
   width: auto;
-  padding: 8px 24px;
-  margin-left: 15px;
+  min-width: 0;
+  padding: 8px 12px;
+  margin-left: 8px;
+  border-radius: 14px;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1;
+  white-space: nowrap;
+  box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .promo-price {
+  margin: 0;
   font-size: 20px;
   color: #ff6b35;
-  font-weight: bold;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 .learn-button {
@@ -586,7 +638,7 @@ onUnmounted(() => {
 .learn-button--study {
   background-color: #fff;
   color: #3b82f6;
-  border: 1px solid #3b82f6;
+  border: 2px solid #3b82f6;
 }
 
 .course-grid {
@@ -671,3 +723,4 @@ onUnmounted(() => {
   fill: currentColor;
 }
 </style>
+

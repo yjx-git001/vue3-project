@@ -1,14 +1,13 @@
 <template>
   <div class="course-content-page">
-    <!-- 顶部导航 -->
     <header class="top-nav">
       <button class="back-btn" @click="$router.back()">
         <svg viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
       </button>
       <span class="nav-title">课程详情</span>
+      <div class="nav-placeholder"></div>
     </header>
 
-    <!-- 课程横幅 -->
     <div class="course-banner">
       <img :src="courseDetail.image ? imageBaseUrl + courseDetail.image : '/images/course-detail-banner.png'" alt="课程横幅" class="banner-image" />
       <div class="play-overlay">
@@ -44,12 +43,14 @@
           v-for="lesson in lessons"
           :key="lesson.id"
           class="lesson-item"
+          :class="{ 'lesson-item--playing': lesson.isPlaying }"
+          @click="playLesson(lesson.id)"
         >
-          <div class="lesson-number">{{ String(lesson.id).padStart(2, '0') }}</div>
+          <div class="lesson-number" :class="{ 'lesson-number--playing': lesson.isPlaying }">{{ String(lesson.id).padStart(2, '0') }}</div>
           <div class="lesson-info">
             <div class="lesson-title">{{ lesson.title }}</div>
             <div class="lesson-meta">
-              <span class="lesson-type">{{ lesson.type }}</span>
+              <span class="lesson-type" :class="{ 'lesson-type--playing': lesson.isPlaying }">{{ lesson.type }}</span>
               <span class="lesson-duration">{{ lesson.duration }}</span>
             </div>
           </div>
@@ -74,11 +75,11 @@
             <img src="/images/exam-practice-icon.png" class="exam-icon-img" />
             <span class="exam-label">考题训练</span>
           </div>
-          <div class="exam-card">
+          <div class="exam-card" @click="goWrongQuestions">
             <img src="/images/error-record-icon.png" class="exam-icon-img" />
             <span class="exam-label">错题记录</span>
           </div>
-          <div class="exam-card">
+          <div class="exam-card" @click="goMockHistory">
             <img src="/images/exam-history-icon.png" class="exam-icon-img" />
             <span class="exam-label">模考记录</span>
           </div>
@@ -146,24 +147,43 @@
             class="attachment-item"
           >
             <div class="file-icon pdf">
-              <svg viewBox="0 0 24 24"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" fill="white" /></svg>
+              <svg viewBox="0 0 48 52" class="pdf-file-svg" aria-hidden="true">
+                <path d="M9 3h24l9 9v31a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8a5 5 0 0 1 5-5z" fill="#ef5350" />
+                <path d="M33 3v9h9z" fill="#d94744" />
+                <path d="M16.8 36.2c3.4-1.1 6.8-3 9.9-6.3c2.7.4 5.1 1.4 7.2 2.6" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M27.3 20.6c1 3.3 2.6 6.9 4.3 9.9c-2.5-.4-5-.5-7.6-.3c1.3-3 2.4-6.2 3.3-9.6z" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                <circle cx="16.8" cy="36.2" r="1.2" fill="#fff" />
+                <circle cx="33.9" cy="32.6" r="1.2" fill="#fff" />
+              </svg>
             </div>
             <div class="file-info">
               <div class="file-name">{{ file.name }}</div>
-              <div class="file-size">{{ file.size }}</div>
+              <div class="file-size">{{ file.size || '219.8KB' }}</div>
             </div>
             <button class="download-file-btn">下载</button>
           </div>
         </div>
         <div class="file-type-icons">
-          <div class="type-icon ppt">
-            <svg viewBox="0 0 24 24"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2Z" fill="white" /></svg>
+          <div class="type-icon">
+            <svg viewBox="0 0 40 46" aria-hidden="true">
+              <path d="M6 2h20l8 8v30a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4z" fill="#ef765e"/>
+              <path d="M26 2v8h8z" fill="#d45e48"/>
+              <text x="20" y="25" text-anchor="middle" dominant-baseline="middle" fill="#fff" font-size="16" font-weight="700">p</text>
+            </svg>
           </div>
-          <div class="type-icon word">
-            <svg viewBox="0 0 24 24"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2Z" fill="white" /></svg>
+          <div class="type-icon">
+            <svg viewBox="0 0 40 46" aria-hidden="true">
+              <path d="M6 2h20l8 8v30a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4z" fill="#4f97db"/>
+              <path d="M26 2v8h8z" fill="#3f7eb9"/>
+              <text x="20" y="25" text-anchor="middle" dominant-baseline="middle" fill="#fff" font-size="16" font-weight="700">w</text>
+            </svg>
           </div>
-          <div class="type-icon excel">
-            <svg viewBox="0 0 24 24"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2Z" fill="white" /></svg>
+          <div class="type-icon">
+            <svg viewBox="0 0 40 46" aria-hidden="true">
+              <path d="M6 2h20l8 8v30a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4z" fill="#58c37a"/>
+              <path d="M26 2v8h8z" fill="#45a863"/>
+              <text x="20" y="25" text-anchor="middle" dominant-baseline="middle" fill="#fff" font-size="16" font-weight="700">x</text>
+            </svg>
           </div>
         </div>
       </div>
@@ -227,6 +247,15 @@ const openExamModal = () => {
     return
   }
   showExamModal.value = true
+}
+
+const playLesson = (lessonId: number) => {
+  lessons.value = lessons.value.map(lesson => ({
+    ...lesson,
+    isPlaying: lesson.id === lessonId,
+    type: lesson.id === lessonId ? '正在播放' : '视频'
+  }))
+  selectedLessonId.value = lessonId
 }
 
 onMounted(async () => {
@@ -371,6 +400,18 @@ const startPractice = (questionType: number) => {
   router.push(`/exam_practice/${practiceEk}?type=${questionType}`)
 }
 
+const goWrongQuestions = () => {
+  const selectedLesson = lessons.value.find(l => l.id === selectedLessonId.value)
+  const ek = selectedLesson?.courseEk || Number(route.params.id)
+  router.push(`/wrong_question_detail/${ek}`)
+}
+
+const goMockHistory = () => {
+  const selectedLesson = lessons.value.find(l => l.id === selectedLessonId.value)
+  const ek = selectedLesson?.courseEk || Number(route.params.id)
+  router.push(`/mock_exam_history/${ek}`)
+}
+
 const startMockExam = async () => {
   // 获取当前选中的子课程 ek
   const selectedLesson = lessons.value.find(l => l.id === selectedLessonId.value)
@@ -387,7 +428,7 @@ const startMockExam = async () => {
     alert('获取模拟考试配置失败，请重试')
     return
   }
-  router.push(`/exam_practice/${mockEk}?mode=mock`)
+  router.push(`/mock_exam_detail/${mockEk}`)
 }
 
 const lessons = ref<{
@@ -408,15 +449,17 @@ const attachments = ref<{
 
 <style scoped>
 .course-content-page {
-  background-color: #f5f5f5;
+  background-color: #f2f4f8;
   min-height: 100vh;
+  max-width: 560px;
+  margin: 0 auto;
 }
 
 .top-nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
+  padding: 14px 16px 12px;
   background-color: #fff;
 }
 
@@ -441,29 +484,18 @@ const attachments = ref<{
   text-align: center;
 }
 
-.nav-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.icon-btn {
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-}
-
-.icon-btn svg {
-  width: 22px;
-  height: 22px;
-  fill: #666;
+.nav-placeholder {
+  width: 24px;
+  height: 24px;
 }
 
 .course-banner {
   position: relative;
-  width: 100%;
-  height: 200px;
+  margin: 0 16px;
+  border-radius: 16px;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
+  background: #d9e9ff;
 }
 
 .banner-image {
@@ -481,13 +513,13 @@ const attachments = ref<{
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.14);
 }
 
 .play-button {
-  width: 60px;
-  height: 60px;
-  background: rgba(255, 255, 255, 0.9);
+  width: 76px;
+  height: 76px;
+  background: rgba(255, 255, 255, 0.72);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -496,50 +528,53 @@ const attachments = ref<{
 }
 
 .play-button svg {
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   margin-left: 4px;
 }
 
 .course-info-section {
   background-color: #fff;
-  padding: 16px;
+  padding: 14px 16px 10px;
 }
 
 .course-title {
   font-size: 18px;
   font-weight: 600;
-  color: #333;
-  margin: 0 0 8px 0;
+  color: #343b45;
+  margin: 0 0 10px 0;
 }
 
 .course-tag {
   display: inline-block;
-  background-color: #e3f2fd;
-  color: #2196f3;
-  padding: 4px 12px;
-  border-radius: 4px;
+  background-color: #e7f0ff;
+  color: #4d84e9;
+  padding: 6px 12px;
+  border-radius: 8px;
   font-size: 13px;
+  line-height: 1;
 }
 
 .tabs {
   display: flex;
   background-color: #fff;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 0 18px;
+  gap: 30px;
+  border-bottom: 1px solid #eceff5;
 }
 
 .tab-item {
-  text-align: center;
-  padding: 14px 16px;
-  font-size: 15px;
-  color: #666;
+  padding: 14px 0;
+  font-size: 16px;
+  color: #6f7681;
+  font-weight: 500;
   cursor: pointer;
   position: relative;
 }
 
 .tab-item.active {
-  color: #3b82f6;
-  font-weight: 600;
+  color: #333;
+  font-weight: 700;
 }
 
 .tab-item.active::after {
@@ -548,16 +583,16 @@ const attachments = ref<{
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 30px;
-  height: 3px;
-  background-color: #3b82f6;
-  border-radius: 2px;
+  width: 22px;
+  height: 4px;
+  background-color: #4668ff;
+  border-radius: 99px;
 }
 
 .content-area {
-  background-color: #f5f5f5;
+  background-color: #f2f4f8;
   min-height: 400px;
-  padding: 12px;
+  padding: 12px 12px 20px;
 }
 
 .chapter-header {
@@ -594,36 +629,42 @@ const attachments = ref<{
 }
 
 .catalog-content {
-  padding-bottom: 16px;
+  padding-bottom: 6px;
 }
 
 .lesson-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 16px;
+  padding: 14px 14px;
   background: #fff;
-  border-radius: 12px;
+  border-radius: 14px;
   margin-bottom: 10px;
+  border: 1px solid transparent;
+}
+
+.lesson-item--playing {
+  background: #dce6fb;
+  border-color: #b8c9f3;
 }
 
 .lesson-number {
-  width: 40px;
-  height: 40px;
-  background-color: #e3f2fd;
-  border-radius: 8px;
+  width: 50px;
+  height: 50px;
+  background-color: #bfd0f8;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
-  font-weight: 600;
-  color: #2196f3;
+  font-size: 20px;
+  font-weight: 700;
+  color: #2f76e5;
   flex-shrink: 0;
 }
 
-.lesson-item:first-child .lesson-number {
-  background-color: #3b82f6;
-  color: #fff;
+.lesson-number--playing {
+  background-color: #b2c7f7;
+  color: #2f76e5;
 }
 
 .lesson-info {
@@ -632,21 +673,37 @@ const attachments = ref<{
 
 .lesson-title {
   font-size: 15px;
-  color: #333;
+  color: #40454f;
   margin-bottom: 4px;
+  font-weight: 600;
 }
 
 .lesson-meta {
   display: flex;
   gap: 8px;
+  color: #5d6470;
+  align-items: center;
+}
+
+.lesson-type {
   font-size: 13px;
-  color: #999;
+  color: #5d6470;
+}
+
+.lesson-type--playing {
+  color: #4f5f7c;
+  font-weight: 600;
+}
+
+.lesson-duration {
+  font-size: 13px;
+  color: #5d6470;
 }
 
 .play-btn {
-  width: 32px;
-  height: 32px;
-  background: #e0e0e0;
+  width: 30px;
+  height: 30px;
+  background: #b8c1cf;
   border: none;
   border-radius: 50%;
   cursor: pointer;
@@ -658,13 +715,13 @@ const attachments = ref<{
 }
 
 .play-btn svg {
-  width: 18px;
-  height: 18px;
-  fill: #999;
+  width: 16px;
+  height: 16px;
+  fill: #fff;
 }
 
 .play-btn.playing {
-  background: #3b82f6;
+  background: #3d82ed;
 }
 
 .play-btn.playing svg {
@@ -742,24 +799,23 @@ const attachments = ref<{
 }
 
 .attachments-content {
-  padding: 12px;
+  padding: 10px 12px;
 }
 
 .attachment-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px;
+  gap: 14px;
+  padding: 14px 16px;
   background-color: #fff;
-  border-radius: 12px;
-  margin-bottom: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  margin-bottom: 10px;
+  border: 1px solid #edf0f6;
 }
 
 .file-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 8px;
+  width: 40px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -767,12 +823,13 @@ const attachments = ref<{
 }
 
 .file-icon.pdf {
-  background-color: #f44336;
+  background: none;
 }
 
-.file-icon svg {
-  width: 24px;
-  height: 24px;
+.pdf-file-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .file-info {
@@ -780,57 +837,44 @@ const attachments = ref<{
 }
 
 .file-name {
-  font-size: 14px;
-  color: #333;
-  margin-bottom: 4px;
+  font-size: 17px;
+  color: #40454f;
+  margin-bottom: 2px;
+  font-weight: 500;
 }
 
 .file-size {
-  font-size: 12px;
-  color: #999;
+  font-size: 14px;
+  color: #9aa0ad;
 }
 
 .download-file-btn {
-  padding: 6px 16px;
+  padding: 0;
   background: none;
   border: none;
-  color: #3b82f6;
-  font-size: 14px;
+  color: #3f87ff;
+  font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
 }
 
 .file-type-icons {
   display: flex;
-  gap: 16px;
-  padding: 24px 16px;
+  gap: 34px;
+  padding: 24px 0 0 44px;
   justify-content: flex-start;
-  margin-top: 100px;
+  margin-top: 132px;
 }
 
 .type-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.type-icon.ppt {
-  background-color: #ff6b00;
-}
-
-.type-icon.word {
-  background-color: #2196f3;
-}
-
-.type-icon.excel {
-  background-color: #4caf50;
+  width: 40px;
+  height: 46px;
 }
 
 .type-icon svg {
-  width: 28px;
-  height: 28px;
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .modal-overlay {

@@ -92,8 +92,8 @@ export const orderApi = {
   pay(orderNo: string, payType: number, cardCode?: string) {
     return request.post('/order/pay', { orderNo, payType, cardCode })
   },
-  getMyOrders() {
-    return request.get('/order/my')
+  getMyOrders(status?: number) {
+    return request.get('/order/my', { params: status ? { status } : undefined })
   },
   hasPurchased(courseEk: number) {
     return request.get('/order/purchased', { params: { courseEk } })
@@ -272,11 +272,14 @@ export const mockExamApi = {
   saveConfig(data: { courseEk: number; singleCount: number; multipleCount: number; judgeCount: number }) {
     return request.post('/course_content/mock_exam_config', data)
   },
-  saveRecord(data: { courseEk: number; score: number; total: number; correct: number }) {
+  saveRecord(data: { courseEk: number; score: number; total: number; correct: number; duration: number }) {
     return request.post('/course_content/mock_exam_record', data)
   },
   getStats(courseEk: number) {
     return request.get('/course_content/mock_exam_stats', { params: { courseEk } })
+  },
+  getHistory(courseEk: number) {
+    return request.get('/course_content/mock_exam_history', { params: { courseEk } })
   },
   saveWrongQuestions(data: { courseEk: number; questionIds: number[] }) {
     return request.post('/course_content/wrong_questions', data)

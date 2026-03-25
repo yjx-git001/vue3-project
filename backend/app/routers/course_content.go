@@ -40,6 +40,7 @@ func registerCourseContentRouter(apiGroup *gin.RouterGroup) {
 	{
 		contentAuth.POST("/mock_exam_record", api.SaveMockExamRecord)
 		contentAuth.GET("/mock_exam_stats", api.GetMockExamStats)
+		contentAuth.GET("/mock_exam_history", api.GetMockExamHistory)
 		contentAuth.POST("/wrong_questions", api.SaveWrongQuestions)
 		contentAuth.GET("/wrong_questions/courses", api.GetWrongQuestionCourseList)
 		contentAuth.GET("/wrong_questions/list", api.GetWrongQuestionList)

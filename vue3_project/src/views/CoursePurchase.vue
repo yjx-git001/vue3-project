@@ -24,8 +24,12 @@
           <span class="price-label">课程价格</span>
           <span class="price-value">¥{{ (price / 100).toFixed(2) }}</span>
         </div>
+        <div class="price-row">
+          <span class="price-label">课程优惠</span>
+          <span class="price-value discount">-¥{{ (fixedDiscount / 100).toFixed(2) }}</span>
+        </div>
         <div class="price-row total">
-          <span class="price-value total-price">合计¥{{ (price / 100).toFixed(2) }}</span>
+          <span class="price-value total-price">合计¥{{ (payablePrice / 100).toFixed(2) }}</span>
         </div>
       </section>
 
@@ -64,7 +68,8 @@
 
     <footer class="purchase-footer">
       <div class="footer-info">
-        <div class="total-amount">¥{{ (price / 100).toFixed(2) }}</div>
+        <div class="total-amount">¥{{ (payablePrice / 100).toFixed(2) }}</div>
+        <div class="saved-amount">共省{{ (fixedDiscount / 100).toFixed(2) }}元</div>
       </div>
       <div v-if="payError" style="color:#ef4444;font-size:12px;margin-right:8px">{{ payError }}</div>
       <button class="submit-btn" @click="handleSubmit" :disabled="paying">{{ paying ? '处理中...' : '提交订单' }}</button>
@@ -86,8 +91,10 @@ const imageBaseUrl = 'http://localhost:8080'
 const paying = ref(false)
 const payError = ref('')
 const orderNo = ref('')
+const fixedDiscount = 22100
 
 const price = computed(() => courseDetail.value.price || 0)
+const payablePrice = computed(() => price.value)
 
 onMounted(async () => {
   const ek = Number(route.query.ek)
@@ -128,10 +135,13 @@ const handleSubmit = async () => {
 <style scoped>
 .course-purchase {
   background-color: #f5f7fa;
-  min-height: 100vh;
-  padding-bottom: 80px;
-  overflow-x: hidden;
-  max-width: 100vw;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
   margin: 0 auto;
 }
 
@@ -141,16 +151,25 @@ const handleSubmit = async () => {
   align-items: center;
   padding: 12px 16px;
   background-color: #fff;
+  flex-shrink: 0;
 }
 
 .nav-placeholder {
   width: 24px;
+  height: 24px;
+  flex-shrink: 0;
 }
 
 .back-btn {
   background: none;
   border: none;
   padding: 0;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
 
@@ -187,6 +206,11 @@ const handleSubmit = async () => {
 }
 
 .purchase-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 16px;
 }
 
@@ -248,7 +272,7 @@ const handleSubmit = async () => {
 }
 
 .price-label {
-  font-size: 15px;
+  font-size: 16px;
   color: #666;
 }
 
@@ -258,7 +282,7 @@ const handleSubmit = async () => {
 }
 
 .price-value {
-  font-size: 15px;
+  font-size: 16px;
   color: #333;
   font-weight: 500;
 }
@@ -268,7 +292,7 @@ const handleSubmit = async () => {
 }
 
 .price-value.total-price {
-  font-size: 20px;
+  font-size: 18px;
   color: #333;
   font-weight: 700;
 }
@@ -290,6 +314,7 @@ const handleSubmit = async () => {
   flex-direction: column;
   padding: 16px;
   border: 1px solid #e0e0e0;
+  background-color: #fff;
   border-radius: 16px;
   margin-bottom: 12px;
   cursor: pointer;
@@ -376,16 +401,14 @@ const handleSubmit = async () => {
 }
 
 .purchase-footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
   background-color: #fff;
   box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+  flex-shrink: 0;
 }
 
 .footer-info {

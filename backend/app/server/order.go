@@ -127,8 +127,8 @@ func (s orderService) Create(userID uint, req *dto.CreateOrderReq) error {
 	return dao.OrderDao.Create(db.Db, order)
 }
 
-func (s orderService) GetByUserID(userID uint) ([]dto.OrderResp, error) {
-	list, err := dao.OrderDao.GetByUserID(db.Db, userID)
+func (s orderService) GetByUserID(userID uint, status *models.OrderStatus) ([]dto.OrderResp, error) {
+	list, err := dao.OrderDao.GetByUserID(db.Db, userID, status)
 	if err != nil {
 		return nil, err
 	}
@@ -138,29 +138,39 @@ func (s orderService) GetByUserID(userID uint) ([]dto.OrderResp, error) {
 	for _, o := range list {
 		ekSet = append(ekSet, o.CourseEk)
 	}
-	imageMap := make(map[int64]string)
+	type courseMeta struct {
+		image    string
+		category models.CourseCategory
+	}
+	courseMap := make(map[int64]courseMeta)
 	if len(ekSet) > 0 {
 		var courses []models.Course
-		db.Db.Select("ek, image").Where("ek IN ?", ekSet).Find(&courses)
+		db.Db.Select("ek, image, course_category").Where("ek IN ?", ekSet).Find(&courses)
 		for _, c := range courses {
-			imageMap[c.Ek] = c.Image
+			courseMap[c.Ek] = courseMeta{
+				image:    c.Image,
+				category: c.CourseCategory,
+			}
 		}
 	}
 
 	result := make([]dto.OrderResp, 0, len(list))
 	for _, o := range list {
+		meta := courseMap[o.CourseEk]
 		result = append(result, dto.OrderResp{
-			ID:          o.ID,
-			OrderNo:     o.OrderNo,
-			CourseEk:    o.CourseEk,
-			CourseName:  o.CourseName,
-			CourseImage: imageMap[o.CourseEk],
-			Price:       o.Price,
-			PayType:     o.PayType,
-			PayTypeStr:  models.PayTypeMap[o.PayType],
-			Status:      o.Status,
-			StatusStr:   models.OrderStatusMap[o.Status],
-			CreatedAt:   o.CreatedAt.Format("2006-01-02 15:04:05"),
+			ID:                o.ID,
+			OrderNo:           o.OrderNo,
+			CourseEk:          o.CourseEk,
+			CourseName:        o.CourseName,
+			CourseCategory:    meta.category,
+			CourseCategoryStr: models.CourseCategoryMap[meta.category],
+			CourseImage:       meta.image,
+			Price:             o.Price,
+			PayType:           o.PayType,
+			PayTypeStr:        models.PayTypeMap[o.PayType],
+			Status:            o.Status,
+			StatusStr:         models.OrderStatusMap[o.Status],
+			CreatedAt:         o.CreatedAt.Format("2006-01-02 15:04:05"),
 		})
 	}
 	return result, nil

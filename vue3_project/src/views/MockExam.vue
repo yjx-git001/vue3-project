@@ -71,10 +71,10 @@ const statsMap = ref<Record<number, { mockCount: number; highestScore: number }>
 const durationMap = ref<Record<number, number>>({}) // courseEk -> 秒
 
 const formatDuration = (seconds: number) => {
-  const h = Math.floor(seconds / 3600)
-  const m = Math.floor((seconds % 3600) / 60)
-  if (h > 0) return `${h}h${m}m`
-  return `${m}分钟`
+  const safe = Math.max(0, Math.floor(seconds || 0))
+  const m = Math.floor(safe / 60)
+  const s = safe % 60
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
 }
 
 onMounted(async () => {
@@ -110,7 +110,12 @@ onMounted(async () => {
 <style scoped>
 .mock-exam-page {
   background-color: #f5f5f5;
-  min-height: 100vh;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
 .top-nav {
@@ -120,12 +125,19 @@ onMounted(async () => {
   padding: 12px 16px;
   background-color: #fff;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  flex-shrink: 0;
 }
 
 .back-btn {
   background: none;
   border: none;
   padding: 0;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
 
@@ -145,6 +157,8 @@ onMounted(async () => {
 
 .nav-placeholder {
   width: 24px;
+  height: 24px;
+  flex-shrink: 0;
 }
 
 .loading-wrap,
@@ -157,6 +171,8 @@ onMounted(async () => {
   gap: 12px;
   color: #999;
   font-size: 15px;
+  flex: 1;
+  min-height: 0;
 }
 
 .empty-text {
@@ -166,6 +182,11 @@ onMounted(async () => {
 }
 
 .exam-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
   padding: 15px;
 }
 

@@ -460,8 +460,13 @@ onUnmounted(async () => {
 <style scoped>
 .exam-practice-page {
   background-color: #f5f5f5;
-  min-height: 100vh;
-  padding-bottom: 80px;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  overscroll-behavior-y: none;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
 .top-nav {
@@ -477,6 +482,12 @@ onUnmounted(async () => {
   background: none;
   border: none;
   padding: 0;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
 
@@ -492,6 +503,12 @@ onUnmounted(async () => {
   color: #333;
   flex: 1;
   text-align: center;
+}
+
+.nav-placeholder {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
 }
 
 .nav-progress {
@@ -525,7 +542,8 @@ onUnmounted(async () => {
 .course-info-section {
   background-color: #fff;
   padding: 16px;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
+  flex-shrink: 0;
 }
 
 /* 课程名 + 右侧进度数字 */
@@ -608,7 +626,11 @@ onUnmounted(async () => {
 }
 
 .exam-content {
-  padding: 16px;
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px 16px 16px;
 }
 
 /* 白色题目卡片 */
@@ -772,16 +794,14 @@ onUnmounted(async () => {
 }
 
 .bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 12px 20px;
   background-color: #fff;
   border-top: 1px solid #eee;
+  flex-shrink: 0;
 }
 
 .nav-btn {

@@ -98,6 +98,7 @@ type MockExamRecordSaveReq struct {
 	Score    int   `json:"score"`
 	Total    int   `json:"total"`
 	Correct  int   `json:"correct"`
+	Duration int   `json:"duration"`
 }
 
 type MockExamRecordGetReq struct {
@@ -107,6 +108,15 @@ type MockExamRecordGetReq struct {
 type MockExamStatsResp struct {
 	MockCount    int `json:"mockCount"`
 	HighestScore int `json:"highestScore"`
+}
+
+type MockExamRecordItem struct {
+	ID        uint   `json:"id"`
+	Score     int    `json:"score"`
+	Total     int    `json:"total"`
+	Correct   int    `json:"correct"`
+	Duration  int    `json:"duration"`
+	CreatedAt string `json:"createdAt"`
 }
 
 // ===== 错题记录 =====

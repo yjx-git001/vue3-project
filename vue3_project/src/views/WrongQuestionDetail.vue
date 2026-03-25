@@ -2,7 +2,7 @@
   <div class="wrong-question-detail-page">
     <!-- 顶部导航 -->
     <header class="top-nav">
-      <button class="back-btn" @click="$router.back()">
+      <button class="back-btn" @click="goBack">
         <svg viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
       </button>
       <span class="nav-title">错题记录</span>
@@ -66,7 +66,7 @@
         <div class="answer-section">
           <div class="correct-answer">
             <span class="label">正确答案：</span>
-            <span class="value">{{ currentQuestion.answer }}</span>
+            <span class="value">{{ formatAnswerDisplay(currentQuestion.answer) }}</span>
           </div>
           <div v-if="currentQuestion.analysis" class="answer-analysis">
             <span class="label">错题解析：</span>
@@ -111,10 +111,19 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { mockExamApi, courseApi } from '@/api'
 
 const route = useRoute()
+const router = useRouter()
+
+const goBack = () => {
+  if (window.history.length > 1) {
+    router.back()
+  } else {
+    router.push(`/course_content/${route.params.id}`)
+  }
+}
 const loading = ref(true)
 const questions = ref<any[]>([])
 const courseName = ref('')
@@ -126,6 +135,13 @@ const judgeOptions = [
   { value: 'T', label: '正确（T）' },
   { value: 'F', label: '错误（F）' }
 ]
+
+const formatAnswerDisplay = (answer: string) => {
+  const normalized = String(answer || '').toUpperCase()
+  if (normalized === 'T') return '正确'
+  if (normalized === 'F') return '错误'
+  return answer || ''
+}
 
 const tabs = computed(() => {
   const types = [
@@ -192,8 +208,12 @@ onMounted(async () => {
 <style scoped>
 .wrong-question-detail-page {
   background-color: #f5f5f5;
-  min-height: 100vh;
-  padding-bottom: 80px;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
 .top-nav {
@@ -202,12 +222,19 @@ onMounted(async () => {
   align-items: center;
   padding: 12px 16px;
   background-color: #fff;
+  flex-shrink: 0;
 }
 
 .back-btn {
   background: none;
   border: none;
   padding: 0;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
 
@@ -225,18 +252,28 @@ onMounted(async () => {
   text-align: center;
 }
 
-.nav-placeholder { width: 24px; }
+.nav-placeholder {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
 
 .loading-wrap {
+  flex: 1;
+  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 60vh;
   color: #999;
   font-size: 15px;
 }
 
 .detail-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 0 15px 15px;
 }
 
@@ -387,15 +424,14 @@ onMounted(async () => {
 }
 
 .bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 12px 20px;
   background-color: #fff;
+  border-top: 1px solid #eee;
+  flex-shrink: 0;
 }
 
 .nav-btn {

@@ -13,6 +13,7 @@ import MockExamDetail from '@/views/MockExamDetail.vue'
 import ExamPractice from '@/views/ExamPractice.vue'
 import WrongQuestions from '@/views/WrongQuestions.vue'
 import WrongQuestionDetail from '@/views/WrongQuestionDetail.vue'
+import MockExamHistory from '@/views/MockExamHistory.vue'
 import CourseOrders from '@/views/CourseOrders.vue'
 import LearningCertificate from '@/views/LearningCertificate.vue'
 import CertificateDetail from '@/views/CertificateDetail.vue'
@@ -114,6 +115,12 @@ const router = createRouter({
       name: 'wrongQuestionDetail',
       component: WrongQuestionDetail
       // 错题详情页 - 显示错题的详细内容和解析
+    },
+    {
+      path: '/mock_exam_history/:id',
+      name: 'mockExamHistory',
+      component: MockExamHistory
+      // 模考记录页 - 显示某门课程的历次模拟考试记录
     },
     {
       path: '/course_orders',

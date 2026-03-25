@@ -6,6 +6,7 @@
         <svg viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
       </button>
       <span class="nav-title">课程学习</span>
+      <span class="nav-placeholder"></span>
     </header>
 
     <main class="study-content">
@@ -22,7 +23,7 @@
               <span class="tag">{{ course.tag }}</span>
               <span class="hours">{{ course.hours }}</span>
             </div>
-            <div class="progress-section">
+            <div v-if="course.progress > 0" class="progress-section">
               <div class="progress-bar">
                 <div class="progress-fill" :style="{ width: course.progress + '%' }"></div>
               </div>
@@ -82,9 +83,12 @@ const formatSeconds = (seconds: number) => {
   const h = Math.floor(total / 3600)
   const m = Math.floor((total % 3600) / 60)
   const s = total % 60
-  if (h > 0) return `${h}小时${m}分${s}秒`
-  if (m > 0) return `${m}分${s}秒`
-  return `${s}秒`
+
+  if (h > 0) {
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+  }
+
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
 }
 
 onMounted(async () => {
@@ -155,7 +159,12 @@ onMounted(async () => {
 <style scoped>
 .course-study-page {
   background-color: #f5f5f5;
-  min-height: 100vh;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
 .top-nav {
@@ -165,12 +174,19 @@ onMounted(async () => {
   padding: 12px 16px;
   background-color: #fff;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  flex-shrink: 0;
 }
 
 .back-btn {
   background: none;
   border: none;
   padding: 0;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
 
@@ -186,6 +202,12 @@ onMounted(async () => {
   color: #333;
   flex: 1;
   text-align: center;
+}
+
+.nav-placeholder {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
 }
 
 .nav-actions {
@@ -207,27 +229,31 @@ onMounted(async () => {
 }
 
 .study-content {
-  padding: 15px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  padding: 10px 12px 16px;
 }
 
 .study-card {
   background-color: #fff;
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 14px;
+  padding: 14px;
   margin-bottom: 12px;
+  box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04);
 }
 
 .card-header {
   display: flex;
   gap: 12px;
   margin-bottom: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #f0f0f0;
 }
 
 .course-image {
-  width: 100px;
-  height: 75px;
+  width: 96px;
+  height: 72px;
   border-radius: 8px;
   object-fit: cover;
   flex-shrink: 0;
@@ -238,14 +264,18 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 0;
 }
 
 .course-title {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 600;
   color: #333;
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .course-tags {
@@ -255,46 +285,50 @@ onMounted(async () => {
 }
 
 .tag {
-  background-color: #e3f2fd;
-  color: #2196f3;
-  padding: 2px 8px;
-  border-radius: 4px;
+  background-color: #eaf2ff;
+  color: #4f72ff;
+  padding: 4px 10px;
+  border-radius: 6px;
   font-size: 12px;
+  line-height: 1;
 }
 
 .hours {
-  background-color: #e3f2fd;
-  color: #2196f3;
-  padding: 2px 8px;
-  border-radius: 4px;
+  background-color: #eaf2ff;
+  color: #4f72ff;
+  padding: 4px 10px;
+  border-radius: 6px;
   font-size: 12px;
+  line-height: 1;
 }
 
 .progress-section {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  margin-top: 2px;
 }
 
 .progress-bar {
   flex: 1;
-  height: 6px;
-  background-color: #e0e0e0;
-  border-radius: 3px;
+  height: 8px;
+  background-color: #e8ebf2;
+  border-radius: 999px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
   background-color: #3b82f6;
+  border-radius: 999px;
   transition: width 0.3s;
 }
 
 .progress-text {
-  font-size: 12px;
+  font-size: 14px;
   color: #3b82f6;
-  font-weight: 500;
-  min-width: 35px;
+  font-weight: 600;
+  min-width: 44px;
   text-align: right;
 }
 
@@ -302,16 +336,25 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: nowrap;
+  gap: 10px;
+  border-top: 1px solid #f1f3f7;
+  padding-top: 12px;
 }
 
 .study-time {
   font-size: 13px;
-  color: #666;
+  color: #6b7280;
+  line-height: 1.4;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .action-buttons {
   display: flex;
-  gap: 8px;
+  gap: 10px;
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .download-btn {

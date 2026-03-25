@@ -1,6 +1,7 @@
 package httpapis
 
 import (
+	"backend/app/models"
 	services "backend/app/server"
 	"backend/app/server/dto"
 	"backend/pkg/api"
@@ -34,9 +35,22 @@ func (a OrderApi) Create(c *gin.Context) {
 
 func (a OrderApi) GetMyOrders(c *gin.Context) {
 	a.MakeContext(c)
+	var req dto.GetMyOrdersReq
+	if err := c.ShouldBindQuery(&req); err != nil {
+		a.Error(400, err, "参数错误")
+		return
+	}
+	if req.Status != nil {
+		if *req.Status != models.OrderStatusPending &&
+			*req.Status != models.OrderStatusPaid &&
+			*req.Status != models.OrderStatusCancelled {
+			a.Error(400, nil, "状态参数错误")
+			return
+		}
+	}
 
 	userID := c.GetUint("userID")
-	list, err := services.OrderService.GetByUserID(userID)
+	list, err := services.OrderService.GetByUserID(userID, req.Status)
 	if err != nil {
 		logger.Sugar.Errorf("get orders error: %s", err.Error())
 		a.ErrorApi(err)

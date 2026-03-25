@@ -87,6 +87,7 @@ type MockExamRecord struct {
 	Score     int   `json:"score" gorm:"type:int;default:0;comment:得分(满分100)"`
 	Total     int   `json:"total" gorm:"type:int;default:0;comment:总题数"`
 	Correct   int   `json:"correct" gorm:"type:int;default:0;comment:答对题数"`
+	Duration  int   `json:"duration" gorm:"type:int;default:0;comment:用时(秒)"`
 }
 
 func (MockExamRecord) TableName() string {

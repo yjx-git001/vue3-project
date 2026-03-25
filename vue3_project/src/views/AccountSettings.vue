@@ -5,6 +5,7 @@
         <svg viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
       </button>
       <span class="nav-title">账号设置</span>
+      <span class="nav-placeholder"></span>
     </header>
 
     <main class="settings-content">
@@ -221,12 +222,13 @@ function handleLogout() {
 </script>
 
 <style scoped>
-.account-settings-page { background-color: #f5f5f5; min-height: 100vh; }
-.top-nav { display: flex; align-items: center; padding: 12px 16px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-.back-btn { background: none; border: none; padding: 0; cursor: pointer; }
+.account-settings-page { background-color: #f5f5f5; position: fixed; inset: 0; overflow: hidden; display: flex; flex-direction: column; box-sizing: border-box; }
+.top-nav { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex-shrink: 0; }
+.back-btn { background: none; border: none; padding: 0; width: 24px; height: 24px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 .back-btn svg { width: 24px; height: 24px; fill: #333; }
 .nav-title { font-size: 18px; font-weight: 600; color: #333; flex: 1; text-align: center; }
-.settings-content { padding: 16px; }
+.nav-placeholder { width: 24px; height: 24px; flex-shrink: 0; }
+.settings-content { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; padding: 16px; }
 .setting-item { background: #fff; padding: 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1px; cursor: pointer; }
 .setting-item:first-child { border-radius: 12px 12px 0 0; }
 .setting-item:last-of-type { border-radius: 0 0 12px 12px; margin-bottom: 20px; }

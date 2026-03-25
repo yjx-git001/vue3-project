@@ -175,6 +175,15 @@ func (d mockExamRecordDao) GetStats(tx *gorm.DB, userID uint, courseEk int64) (m
 	return
 }
 
+func (d mockExamRecordDao) GetList(tx *gorm.DB, userID uint, courseEk int64) ([]models.MockExamRecord, error) {
+	var records []models.MockExamRecord
+	err := tx.Model(&models.MockExamRecord{}).
+		Where("user_id = ? AND course_ek = ? AND deleted_at IS NULL", userID, courseEk).
+		Order("created_at DESC").
+		Find(&records).Error
+	return records, err
+}
+
 func (d mockExamRecordDao) GetFirstPassDate(tx *gorm.DB, userID uint, courseEk int64, minScore int) (*time.Time, error) {
 	var record models.MockExamRecord
 	err := tx.Model(&models.MockExamRecord{}).

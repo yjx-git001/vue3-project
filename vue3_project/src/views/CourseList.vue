@@ -241,27 +241,29 @@ onMounted(() => {
 .tab-item {
   flex: 1;
   text-align: center;
-  font-size: 15px;
-  color: #666;
+  font-size: 18px;
+  color: #a9b0bb;
+  font-weight: 600;
   cursor: pointer;
   padding-bottom: 8px;
   position: relative;
-  transition: color 0.3s;
+  transition: color 0.2s, font-weight 0.2s;
 }
 
 .tab-item.active {
-  color: #3b82f6;
-  font-weight: 600;
+  color: #1f2937;
+  font-weight: 700;
 }
 
 .tab-item.active::after {
   content: '';
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background-color: #3b82f6;
+  left: 50%;
+  bottom: -1px;
+  width: 22px;
+  height: 8px;
+  transform: translateX(-50%);
+  background: center / 100% 100% no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 8'%3E%3Cpath d='M2 2 C6 8,18 8,22 2' fill='none' stroke='%234f72ff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
 }
 
 .filter-section {
