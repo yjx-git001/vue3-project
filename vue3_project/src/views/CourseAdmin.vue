@@ -573,7 +573,10 @@
       </div>
       <div class="form-group">
         <label>卡券类型：</label>
-        <input v-model.trim="couponIssueForm.couponType" type="text" placeholder="默认：单门课程" />
+        <select v-model="couponIssueForm.couponType">
+          <option value="单门课程">单门课程</option>
+          <option value="体系课程">体系课程</option>
+        </select>
       </div>
       <div class="form-group">
         <label>有效期：</label>
