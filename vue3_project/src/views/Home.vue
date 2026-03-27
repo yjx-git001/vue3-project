@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="home-page">
     <!-- 顶部导航 -->
     <header class="top-nav">
@@ -194,7 +194,7 @@ const fetchCourses = async () => {
     courseSystems.value = (systemRes.data?.list || []).map(mapCourse)
     hotCourses.value = (hotRes.data || []).map(mapCourse)
 
-    // 检查购买状�?
+    // 检查购买状�?
     if (localStorage.getItem('token')) {
       try {
         const systemChecks = await Promise.all(
@@ -281,7 +281,7 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 10px 15px;
-  background-color: #fff;
+  background-color: transparent;
 }
 
 .logo-container {
@@ -414,6 +414,7 @@ onUnmounted(() => {
   font-weight: 800;
   white-space: nowrap;
   flex-shrink: 0;
+  margin: 0;
 }
 
 .promo-section .section-header h2::after {
@@ -518,51 +519,56 @@ onUnmounted(() => {
 }
 
 .promo-section {
-  background-color: #eef3fb;
-  padding: 14px 16px 16px;
-  border-radius: 18px;
-  margin-bottom: 20px;
+  background-color: #f1f4fb;
+  padding: 14px 14px 16px;
+  border-radius: 20px;
+  margin-bottom: 14px;
 }
 
 .countdown {
   display: flex;
   align-items: center;
-  font-size: 13px;
-  color: #7b8798;
-  gap: 3px;
+  font-size: 14px;
+  color: #717d90;
+  gap: 4px;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .countdown > span:first-child {
-  margin-right: 4px;
+  margin-right: 6px;
 }
 
 .timer-box {
-  background-color: #4f72b7;
+  background-color: #4e69a7;
   color: #fff;
-  min-width: 28px;
-  padding: 4px 5px;
-  border-radius: 8px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 6px;
+  border-radius: 7px;
   margin: 0 1px;
   text-align: center;
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
 }
 
 .promo-card {
   display: flex;
-  align-items: stretch;
-  margin-top: 10px;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
   background-color: #fff;
-  padding: 12px;
-  border-radius: 18px;
+  padding: 14px 12px;
+  border-radius: 20px;
 }
 
 .promo-image {
-  width: 104px;
-  height: 104px;
-  border-radius: 14px;
-  margin-right: 12px;
+  width: 96px;
+  height: 96px;
+  border-radius: 12px;
   object-fit: cover;
   flex-shrink: 0;
 }
@@ -570,47 +576,41 @@ onUnmounted(() => {
 .promo-info {
   flex: 1;
   min-width: 0;
-  height: 104px;
-  position: relative;
-  padding: 2px 0;
+  min-height: 96px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 3px 0 1px;
 }
 
 .promo-title {
   margin: 0;
-  position: absolute;
-  top: 30px;
-  left: 0;
-  right: 0;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   color: #1f2937;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   line-height: 1.3;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .promo-meta {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 2px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   min-width: 0;
+  margin-top: 12px;
+  padding-top: 0;
 }
 
 .promo-meta .learn-button {
   width: auto;
-  min-width: 0;
-  padding: 8px 12px;
-  margin-left: 8px;
-  border-radius: 14px;
-  font-weight: 600;
+  padding: 8px 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
   font-size: 14px;
-  line-height: 1;
   white-space: nowrap;
   box-sizing: border-box;
   flex-shrink: 0;
@@ -618,8 +618,8 @@ onUnmounted(() => {
 
 .promo-price {
   margin: 0;
-  font-size: 20px;
-  color: #ff6b35;
+  font-size: 22px;
+  color: #ff7a20;
   font-weight: 700;
   line-height: 1;
   flex-shrink: 0;
@@ -723,4 +723,5 @@ onUnmounted(() => {
   fill: currentColor;
 }
 </style>
+
 

@@ -1,43 +1,41 @@
 <template>
   <div class="profile-page">
-    <!-- 顶部导航 -->
-    <header class="top-nav">
-      <div class="logo-container">
-        <img src="/logo.png" alt="Logo" class="logo" />
-        <span class="app-title">港口学堂</span>
-      </div>
-    </header>
-
     <main class="profile-content">
-      <!-- 用户信息卡片 -->
-      <section class="user-card">
-        <div class="user-info">
-          <div class="avatar">
-            <img v-if="userInfo.avatar" :src="imageBaseUrl + userInfo.avatar" class="avatar-img" />
-            <svg v-else viewBox="0 0 24 24"><path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" fill="white" /></svg>
+      <section class="hero-section">
+        <header class="top-nav">
+          <div class="logo-container">
+            <img src="/logo.png" alt="Logo" class="logo" />
+            <span class="app-title">港口学堂</span>
           </div>
-          <div class="user-details">
-            <h2 class="username">{{ userInfo.nickname || userInfo.phone }}</h2>
-            <p class="join-date">入学日期：{{ userInfo.createdAt }}</p>
+        </header>
+
+        <section class="user-card">
+          <div class="user-info">
+            <div class="avatar">
+              <img v-if="userInfo.avatar" :src="imageBaseUrl + userInfo.avatar" class="avatar-img" />
+              <svg v-else viewBox="0 0 24 24"><path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" fill="white" /></svg>
+            </div>
+            <div class="user-details">
+              <h2 class="username">{{ userInfo.nickname || userInfo.phone }}</h2>
+              <p class="join-date">入学日期：{{ userInfo.createdAt }}</p>
+            </div>
+            <div class="user-id">ID: {{ userInfo.id }}</div>
           </div>
-          <div class="user-id">ID: {{ userInfo.id }}</div>
-        </div>
-        <div class="user-stats">
-          <div class="stat-item">
-            <div class="stat-value">{{ formatHours(todayDuration) }}</div>
-            <div class="stat-label">今日学时</div>
+          <div class="user-stats">
+            <div class="stat-item">
+              <div class="stat-value">{{ formatHours(todayDuration) }}</div>
+              <div class="stat-label">今日学时</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">{{ formatHours(totalDuration) }}</div>
+              <div class="stat-label">累计学时</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">{{ certificateCount }}</div>
+              <div class="stat-label">获取证书</div>
+            </div>
           </div>
-          <div class="stat-divider"></div>
-          <div class="stat-item">
-            <div class="stat-value">{{ formatHours(totalDuration) }}</div>
-            <div class="stat-label">累计学时</div>
-          </div>
-          <div class="stat-divider"></div>
-          <div class="stat-item">
-            <div class="stat-value">{{ certificateCount }}</div>
-            <div class="stat-label">获取证书</div>
-          </div>
-        </div>
+        </section>
       </section>
 
       <!-- 我的课程 -->
@@ -220,17 +218,26 @@ const recommendCourses = ref<Array<{
 
 <style scoped>
 .profile-page {
-  background-color: #f5f5f5;
+  background-color: #eef0f4;
   min-height: 100vh;
-  padding-bottom: 70px;
+}
+
+.profile-content {
+  padding: 0 0 76px;
+}
+
+.hero-section {
+  background: linear-gradient(180deg, #c9e2f9 0%, #e8eef9 72%, #f0f2f7 100%);
+  margin-bottom: 6px;
+  padding: 10px 0 4px;
 }
 
 .top-nav {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
-  padding: 10px 15px;
-  background-color: #fff;
+  padding: 8px 18px 0;
+  margin-bottom: 16px;
 }
 
 .logo-container {
@@ -239,59 +246,39 @@ const recommendCourses = ref<Array<{
 }
 
 .logo {
-  width: 40px;
-  height: 40px;
-  margin-right: 8px;
+  width: 44px;
+  height: 44px;
+  margin-right: 10px;
 }
 
 .app-title {
-  font-size: 28px;
-  font-weight: bold;
-}
-
-.nav-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.icon-btn {
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-}
-
-.icon-btn svg {
-  width: 22px;
-  height: 22px;
-  fill: #666;
-}
-
-.profile-content {
-  padding: 15px;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.05;
+  color: #2f3540;
 }
 
 .user-card {
   background-color: transparent;
-  border-radius: 12px;
-  padding: 20px 0 20px 20px;
-  margin-bottom: 15px;
+  padding: 0 0 4px;
+  margin-bottom: 0;
 }
 
 .user-info {
-  display: flex;
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
   align-items: center;
-  margin-bottom: 20px;
-  position: relative;
+  column-gap: 12px;
+  margin-bottom: 14px;
+  padding: 0 0 0 20px;
 }
 
 .avatar {
-  width: 60px;
-  height: 60px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  margin-right: 15px;
-  border: 2px solid #e0e0e0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: 1px solid #e0e0e0;
+  background: linear-gradient(135deg, #6b80f0 0%, #8a6fd3 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -305,98 +292,117 @@ const recommendCourses = ref<Array<{
 }
 
 .avatar svg {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   fill: white;
 }
 
 .user-details {
-  flex: 1;
+  min-width: 0;
+  padding-left: 4px;
 }
 
 .username {
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 600;
-  margin: 0 0 6px 0;
-  color: #333;
+  margin: 0 0 5px 0;
+  color: #242a34;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .join-date {
-  font-size: 13px;
-  color: #666;
+  font-size: 14px;
+  color: #2f3440;
   margin: 0;
+  line-height: 1.2;
 }
 
 .user-id {
-  background-color: #5b9cff;
-  color: #fff;
-  padding: 6px 14px 6px 20px;
-  border-radius: 10px 0 0 10px;
-  font-size: 13px;
+  background-color: #7395fb;
+  color: #eef2ff;
+  min-width: 108px;
+  padding: 0 16px;
+  border-radius: 8px 0 0 8px;
+  border: 1px solid rgba(133, 161, 252, 0.95);
+  font-size: 14px;
   font-weight: 500;
-  position: absolute;
-  right: -15px;
+  line-height: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: end;
+  box-sizing: border-box;
 }
 
 .user-stats {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  justify-items: center;
+  padding: 0 6px 2px;
 }
 
 .stat-item {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  flex: 1;
 }
 
 .stat-value {
   font-size: 20px;
   font-weight: 600;
   margin-bottom: 4px;
-  color: #333;
+  line-height: 1;
+  color: #202833;
 }
 
 .stat-label {
-  font-size: 12px;
-  color: #999;
-}
-
-.stat-divider {
-  width: 1px;
-  height: 30px;
-  background-color: #e0e0e0;
+  font-size: 13px;
+  color: #5f6470;
+  margin-top: 0;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .section-title {
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0 0 15px 0;
-  color: #333;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 14px;
+  color: #1f242d;
 }
 
 .my-courses {
-  background-color: #fff;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 15px;
+  margin: 0 16px 10px;
+  background-color: #f7f7fa;
+  border-radius: 20px;
+  padding: 16px 16px 14px;
 }
 
 .course-actions {
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .action-item {
   display: flex;
   flex-direction: column;
   align-items: center;
+  flex: 1;
   cursor: pointer;
 }
 
 .action-icon {
-  width: 60px;
-  height: 60px;
-  margin-bottom: 8px;
+  width: 62px;
+  height: 62px;
+  margin-bottom: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -409,30 +415,31 @@ const recommendCourses = ref<Array<{
 }
 
 .action-label {
-  font-size: 13px;
-  color: #666;
+  font-size: 14px;
+  color: #242a34;
 }
 
 .menu-section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 15px;
+  gap: 8px;
+  margin: 0 16px 10px;
 }
 
 .menu-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 8px;
 }
 
 .menu-item {
-  background-color: #fff;
-  border-radius: 12px;
-  padding: 12px;
+  background-color: #f7f7fa;
+  border-radius: 14px;
+  padding: 0 12px;
+  min-height: 64px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   cursor: pointer;
   transition: transform 0.2s;
 }
@@ -442,8 +449,8 @@ const recommendCourses = ref<Array<{
 }
 
 .menu-icon {
-  width: 50px;
-  height: 50px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -457,13 +464,14 @@ const recommendCourses = ref<Array<{
 
 .menu-label {
   font-size: 14px;
-  color: #333;
+  color: #2d323c;
   font-weight: 500;
+  line-height: 1;
 }
 
 .service-banner {
-  margin-bottom: 15px;
-  border-radius: 12px;
+  margin: 0 16px 14px;
+  border-radius: 28px;
   overflow: hidden;
   cursor: pointer;
 }
@@ -474,60 +482,60 @@ const recommendCourses = ref<Array<{
 }
 
 .recommend-section {
-  margin-bottom: 20px;
+  margin: 0 16px 12px;
 }
 
 .course-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 10px;
 }
 
 .course-card {
-  background-color: #fff;
-  border-radius: 8px;
-  overflow: hidden;
+  background-color: transparent;
   cursor: pointer;
 }
 
 .course-image-wrapper {
   position: relative;
+  border-radius: 14px;
+  overflow: hidden;
 }
 
 .course-image {
   width: 100%;
-  height: 100px;
+  height: 132px;
   object-fit: cover;
 }
 
 .course-tag {
   position: absolute;
-  top: 8px;
+  top: 7px;
   left: 8px;
-  padding: 4px 10px;
-  border-radius: 10px;
-  font-size: 12px;
+  padding: 4px 11px;
+  border-radius: 12px;
+  font-size: 13px;
   font-weight: 500;
 }
 
 .course-tag--system {
-  background-color: rgba(255,255,255,0.8);
-  color: #3b82f6;
+  background-color: rgba(255, 255, 255, 0.86);
+  color: #3f7cea;
 }
 
 .course-tag--single {
-  background-color: rgba(255,255,255,0.8);
-  color: #3b82f6;
+  background-color: rgba(255, 255, 255, 0.86);
+  color: #e5782f;
 }
 
 .course-info {
-  padding: 10px;
+  padding: 8px 3px 0;
 }
 
 .course-title {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
-  color: #333;
+  color: #1e2530;
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -537,13 +545,15 @@ const recommendCourses = ref<Array<{
 .bottom-nav {
   position: fixed;
   bottom: 0;
-  left: 0;
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 100%;
   display: flex;
   justify-content: space-around;
   background-color: #fff;
-  padding: 10px 0;
-  border-top: 1px solid #eee;
+  padding: 8px 0 10px;
+  border-top: 1px solid #ececf1;
   z-index: 100;
 }
 
@@ -551,20 +561,21 @@ const recommendCourses = ref<Array<{
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: 12px;
-  color: #999;
+  font-size: 13px;
+  color: #8d929d;
   cursor: pointer;
   transition: color 0.3s;
 }
 
 .nav-item.active {
-  color: #3b82f6;
+  color: #4c7ff6;
 }
 
 .nav-item svg {
   width: 24px;
   height: 24px;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
   fill: currentColor;
 }
+
 </style>

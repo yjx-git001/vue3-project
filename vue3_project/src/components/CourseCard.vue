@@ -71,16 +71,19 @@ const handleClick = () => {
 }
 
 .course-card--grid {
-  padding: 8px;
+  padding: 0;
 }
 
 .course-card__image-wrapper {
   position: relative;
+  overflow: hidden;
+  border-radius: 10px;
 }
 
 .course-card__image {
   width: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .course-card--horizontal .course-card__image {
@@ -109,7 +112,7 @@ const handleClick = () => {
 }
 
 .course-card--grid .course-card__info {
-  padding: 0;
+  padding: 8px;
 }
 
 .course-card__title {
