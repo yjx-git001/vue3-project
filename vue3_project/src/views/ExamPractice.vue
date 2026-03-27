@@ -913,18 +913,19 @@ onUnmounted(async () => {
 }
 
 .status-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
 }
 
 .answered-dot {
-  background-color: #3b82f6;
+  background-color: #d8e5ff;
+  border: 1px solid #c0d2f5;
 }
 
 .unanswered-dot {
-  background-color: #f5f5f5;
-  border: 1px solid #ddd;
+  background-color: #f2f2f2;
+  border: 1px solid #e5e5e5;
 }
 
 .status-text {
@@ -942,18 +943,18 @@ onUnmounted(async () => {
   width: 100%;
   aspect-ratio: 1;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   background-color: #f5f5f5;
   color: #333;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .question-number.answered {
-  background-color: #e3f2fd;
-  color: #3b82f6;
+  background-color: #dbe7ff;
+  color: #366fcf;
   font-weight: 600;
 }
 </style>
