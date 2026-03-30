@@ -611,9 +611,15 @@ onUnmounted(() => {
   border-radius: 10px;
   cursor: pointer;
   font-size: 14px;
+  font-weight: 500;
   white-space: nowrap;
   box-sizing: border-box;
   flex-shrink: 0;
+  transition: all 0.3s;
+}
+
+.promo-meta .learn-button--study {
+  border: 1px solid #3b82f6;
 }
 
 .promo-price {
@@ -632,13 +638,24 @@ onUnmounted(() => {
   color: #fff;
   border: none;
   border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
+  transition: all 0.3s;
+}
+
+.learn-button:active {
+  background-color: #2563eb;
 }
 
 .learn-button--study {
   background-color: #fff;
   color: #3b82f6;
-  border: 2px solid #3b82f6;
+  border: 1px solid #3b82f6;
+}
+
+.learn-button--study:active {
+  background-color: #eff6ff;
 }
 
 .course-grid {
